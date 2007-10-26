@@ -64,6 +64,9 @@ END
         :yaml        => %w( yaml yml ),
         :xml         => %w( xml dtd xslt )
   }
+  
+  VC_DIRS = %w(blib CVS _darcs .git .pc RCS SCCS .svn)
+  
   class << self
     attr_reader :opt
   end
@@ -153,6 +156,11 @@ END
         types.include? File.extname(fn) and
         fn[-1..-1] != "~" and
         fn[-1..-1] != "#"
+    end
+    
+    # reject version control dirs
+    files.reject! do |fn|
+      VC_DIRS.any? {|vc| fn.include? vc}
     end
     
     # remove the "./"

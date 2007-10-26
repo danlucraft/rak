@@ -43,6 +43,10 @@ END
 
 END
   end
+  
+  it "skips VC dirs" do
+    %x{rack Aerelon}.should == ""
+  end
 end
 
 describe "Rack", "options" do
