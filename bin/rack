@@ -88,7 +88,8 @@ END
       [ '-n', GetoptLong::NO_ARGUMENT ],
       [ '-Q', GetoptLong::NO_ARGUMENT ],
       [ '-o', GetoptLong::NO_ARGUMENT ],
-      [ '-w', GetoptLong::NO_ARGUMENT ]
+      [ '-w', GetoptLong::NO_ARGUMENT ],
+      [ '--nogroup', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -106,6 +107,7 @@ END
     opt[:literal] = false
     opt[:print_match] = false
     opt[:match_whole_words] = false
+    opt[:print_file_each_line] = false
     
     opts.each do |option, arg|
       case option
@@ -144,6 +146,9 @@ END
         opt[:print_highlighted] = false
       when '-w'
         opt[:match_whole_words] = true
+      when '--nogroup'
+        opt[:print_file_each_line] = true
+        opt[:print_filename] = false
       end
     end
     files = get_files
@@ -258,7 +263,11 @@ END
               if opt[:print_filename]
                 prefix = "#{i}: "
               else
-                prefix = ""
+                if opt[:print_file_each_line]
+                  prefix = FILE_COLOUR + "#{fn}" + CLEAR_COLOURS + " #{i}: "
+                else
+                  prefix = ""
+                end
               end
               print_highlighted(prefix, line, matches)
             end
@@ -346,7 +355,7 @@ Search output:
 
 #  --group               Group matches by file name.
                         (default: on when used interactively)
-#  --nogroup             One result per line, including filename, like grep
+  --nogroup             One result per line, including filename, like grep
                         (default: on when the output is redirected)
 
 #  --[no]color           Highlight the matching text (default: on unless
@@ -362,10 +371,10 @@ File inclusion/exclusion:
   -n                    No descending into subdirectories
 #  -a, --all             All files, regardless of extension (but still skips
                         blib, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
-#  --perl                Include only Perl files.
-#  --type=perl           Include only Perl files.
-#  --noperl              Exclude Perl files.
-#  --type=noperl         Exclude Perl files.
+#  --ruby                Include only Ruby files.
+#  --type=ruby           Include only Ruby files.
+#  --noruby              Exclude Ruby files.
+#  --type=noruby         Exclude Ruby files.
                         See "ack --help type" for supported filetypes.
 #  --[no]follow          Follow symlinks.  Default is off.
 

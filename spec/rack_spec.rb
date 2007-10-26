@@ -155,6 +155,13 @@ END
   it "matches whole words only with -w" do
     strip_ansi(%x{rack Cap -w}).should == ""
   end
+  
+   it "prints the file on each line with --nogroup" do
+    asterize_ansi(%x{rack Cap --nogroup}).should == t=<<END
+*foo.rb* 3: foo foo foo *Cap*rica foo foo foo
+*foo.rb* 4: foo *Cap*sicum foo foo foo foo foo
+END
+  end
 end
 
 describe "Rack", "with combinations of options" do
