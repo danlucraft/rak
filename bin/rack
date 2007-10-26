@@ -86,7 +86,8 @@ END
       [ '-i', GetoptLong::NO_ARGUMENT ],
       [ '-v', GetoptLong::NO_ARGUMENT ],
       [ '-n', GetoptLong::NO_ARGUMENT ],
-      [ '-Q', GetoptLong::NO_ARGUMENT ]
+      [ '-Q', GetoptLong::NO_ARGUMENT ],
+      [ '-o', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -102,6 +103,7 @@ END
     opt[:invert_match] = false
     opt[:descend] = true
     opt[:literal] = false
+    opt[:print_match] = false
     
     opts.each do |option, arg|
       case option
@@ -134,6 +136,10 @@ END
         opt[:descend] = false
       when '-Q'
         opt[:literal] = true
+      when '-o'
+        opt[:print_match] = true
+        opt[:print_filename] = false
+        opt[:print_highlighted] = false
       end
     end
     files = get_files
@@ -208,6 +214,9 @@ END
             matches << eval(opt[:print_output])
           else
             matches << md
+          end
+          if opt[:print_match]
+            puts md.to_s
           end
           count += 1
         end

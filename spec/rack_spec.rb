@@ -144,6 +144,14 @@ END
   it "quotes meta-characters with -Q" do
     strip_ansi(%x{rack Cap. -Q}).should == ""
   end
+  
+  it "prints only the matching portion with -o" do
+    strip_ansi(%x{rack Cap -o}).should == t=<<END
+Cap
+Cap
+END
+  end
+  
 end
 
 describe "Rack", "with combinations of options" do
