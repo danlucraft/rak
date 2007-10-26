@@ -127,6 +127,7 @@ foo.rb
 5: 
 7: 
 9: 
+12: 
 
 END
   end
@@ -140,12 +141,16 @@ foo.rb
 END
   end
   
-  describe "Rack", "with combinations of options" do
-    it "should process -c -v " do
-      strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
+  it "quotes meta-characters with -Q" do
+    strip_ansi(%x{rack Cap. -Q}).should == ""
+  end
+end
+
+describe "Rack", "with combinations of options" do
+  it "should process -c -v " do
+    strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
 dir1/bar.rb:7
-foo.rb:9
+foo.rb:11
 END
-    end
   end
 end

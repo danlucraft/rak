@@ -85,7 +85,8 @@ END
       [ '-h', GetoptLong::NO_ARGUMENT ],
       [ '-i', GetoptLong::NO_ARGUMENT ],
       [ '-v', GetoptLong::NO_ARGUMENT ],
-      [ '-n', GetoptLong::NO_ARGUMENT ]
+      [ '-n', GetoptLong::NO_ARGUMENT ],
+      [ '-Q', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -100,6 +101,7 @@ END
     opt[:ignore_case] = false
     opt[:invert_match] = false
     opt[:descend] = true
+    opt[:literal] = false
     
     opts.each do |option, arg|
       case option
@@ -130,6 +132,8 @@ END
         opt[:invert_match] = true
       when '-n'
         opt[:descend] = false
+      when '-Q'
+        opt[:literal] = true
       end
     end
     files = get_files
@@ -168,6 +172,9 @@ END
   end
     
   def self.search2(str, files)
+    if opt[:literal]
+      str = Regexp.quote(str)
+    end
     if $use_onig
       if opt[:ignore_case]
         re = Oniguruma::ORegexp.new(str, :options => Oniguruma::OPTION_IGNORECASE)
@@ -304,7 +311,7 @@ Searching:
   -i, --ignore-case     Ignore case distinctions
   -v, --invert-match    Invert match: select non-matching lines
 #  -w, --word-regexp     Force PATTERN to match only whole words
-#  -Q, --literal         Quote all metacharacters; expr is literal
+  -Q, --literal         Quote all metacharacters; expr is literal
 
 Search output:
 #  -l, --files-with-matches
