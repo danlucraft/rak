@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+begin
+  require 'oniguruma'
+  $use_onig = true
+rescue
+  $use_onig = false
+end
+
+require 'rubygems'
+require 'inline'
+
+class Rack
+  VERSION = "0.0.1"
+  
+  def self.search(str, dir="")
+    re = Oniguruma::ORegexp.new(str)
+    p re.instance_variables
+    search_with_regexp(re, dir)
+  end
+  
+  def self.search_with_regexp(re, dir="")
+    Dir[dir+"*"].each do |fn|
+      if File.directory? fn
+        search_with_regexp(re, fn+"/")
+      else
+        File.open(fn) do |f|
+          found = false
+          f.each_line do |line|
+#            if line =~ re
+            if Rack.new.match(re, line)
+                found = true
+            end
+          end
+          puts fn if found
+        end
+      end
+    end
+  end
+  
+  inline do |builder|
+    builder.c "
+    static VALUE match(VALUE re, VALUE str) {
+      VALUE my_args[] = {str};
+      VALUE match_data = rb_funcall(re, rb_intern(\"match\"), 1, *my_args);
+      return match_data;
+    }"
+  end
+end
+
+p /#{ARGV[0]}/
+
+Rack.search ARGV[0]

@@ -1,0 +1,171 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'rubygems'
+  require 'oniguruma'
+  require 'inline'
+  $use_onig = true
+rescue
+  $use_onig = false
+end
+
+class Rack
+  VERSION = "0.0.1"
+  
+  FILE_COLOUR = "\033[4m"
+  MATCH_COLOUR = "\033[1m\033[31m"
+  CLEAR_COLOURS = "\033[0m"
+  
+  FILE_TYPES = {
+        :asm         => %w( s S ),
+   #     :binary      => q{Binary files, as defined by Perl's -B op (default: off)},
+        :cc          => %w( c h xs ),
+        :cpp         => %w( cpp m h C H ),
+        :csharp      => %w( cs ),
+        :css         => %w( css ),
+        :elisp       => %w( el ),
+        :haskell     => %w( hs lhs ),
+        :hh          => %w( h ),
+        :html        => %w( htm html shtml ),
+     #   :skipped     => q{Files, but not directories, normally skipped by ack (default: off)},
+        :lisp        => %w( lisp ),
+        :java        => %w( java properties ),
+        :js          => %w( js ),
+        :jsp         => %w( jsp jspx jhtm jhtml ),
+     #   :make        => q{Makefiles},
+        :mason       => %w( mas mhtml mpl mtxt ),
+        :ocaml       => %w( ml mli ),
+        :parrot      => %w( pir pasm pmc ops pod pg tg ),
+        :perl        => %w( pl pm pod t ),
+        :php         => %w( php phpt php3 php4 php5 ),
+        :python      => %w( py ),
+        :ruby        => %w( rb rhtml rjs rxml ),
+        :scheme      => %w( scm ),
+        :shell       => %w( sh bash csh ksh zsh ),
+        :sql         => %w( sql ctl ),
+        :tcl         => %w( tcl ),
+        :tex         => %w( tex cls sty ),
+   #     :text        => q{Text files, as defined by Perl's -T op (default: off)},
+        :tt          => %w( tt tt2 ttml ),
+        :vb          => %w( bas cls frm ctl vb resx ),
+        :vim         => %w( vim ),
+        :yaml        => %w( yaml yml ),
+        :xml         => %w( xml dtd xslt )
+  }
+  
+  def self.search(str, dir="")
+    types_files = FILE_TYPES.invert
+    types = types_files.keys.flatten.map{|s| "."+s}
+    if $use_onig
+      re = Oniguruma::ORegexp.new(str)
+    else
+      re = Regexp.new(str)
+    end
+    rack = Rack.new
+    files = Dir[dir+"**/*"].select do |fn|
+      File.file? fn and 
+        types.include? File.extname(fn) and
+        fn[-1..-1] != "~" and
+        fn[-1..-1] != "#"
+    end
+#     if $use_onig
+#       files.each do |fn| 
+#         rack.match_file_onig(re, fn)
+#       end
+#     else
+      files.each do |fn| 
+        rack.match_file(re, fn)
+      end
+ #    end
+  end
+  
+  def match_file(re, fn)
+    displayed_filename = false
+    File.open(fn) do |f|
+      i = 0
+      f.each_line do |line|
+        i += 1
+        if md = re.match(line)
+          unless displayed_filename
+            puts FILE_COLOUR + fn + CLEAR_COLOURS
+          end
+          print "#{i}: "
+          print line[0..(md.begin-1)]
+          print MATCH_COLOUR
+          print line[md.begin..(md.end-1)]
+          print CLEAR_COLOURS
+          puts  line[md.end..-1]
+          puts
+        end
+      end
+    end
+  end
+  
+  if $use_onig
+    inline do |builder|
+      builder.include '"oniguruma.h"'
+      builder.prefix "
+       typedef struct _oregexp {
+         regex_t * reg;
+       } ORegexp;"
+      
+      builder.c "
+    static VALUE match_file_onig(VALUE re, char* filename) {
+      ORegexp *oregexp;
+      Data_Get_Struct( re, ORegexp, oregexp );
+      FILE *fp = fopen(filename, \"r\");
+      char line[10000];
+      int i = 0;
+      int j = 0;
+      int found = 0;
+      UChar* str_ptr = NULL;
+      int str_len;
+      OnigRegion *region = onig_region_new();
+      int begin;
+      int num_matches;
+      int end;
+      int displayed_filename = 0;
+      while (fgets(line, 10000, fp) && line) {
+        i++;
+        str_ptr = (UChar*) &line; //&my_args;
+        str_len = strlen(str_ptr);
+        int r = onig_search(oregexp->reg, str_ptr, str_ptr + str_len, str_ptr + 0, str_ptr + str_len, region, ONIG_OPTION_NONE);
+
+        if (r != -1) {
+          if (displayed_filename == 0) {
+            printf(\"#{FILE_COLOUR}\");
+            puts(filename);
+            printf(\"#{CLEAR_COLOURS}\");
+            displayed_filename = 1;
+          }
+          printf(\"%d: \", i);
+          num_matches = region->num_regs;
+          begin = region->beg[0];
+          end   = region->end[0];
+          for(j = 0; j < begin; j++) {
+            putc(line[j], stdout);
+          }
+          printf(\"#{MATCH_COLOUR}\");//\\033[41m
+          for(; j < end; j++) {
+            putc(line[j], stdout);
+          }
+          printf(\"#{CLEAR_COLOURS}\");
+          for(; j < str_len; j++) {
+            putc(line[j], stdout);
+          }
+          found = 1;
+        }
+      }
+      onig_region_free(region, 1 );
+      if (found)
+        printf(\"\\n\");
+      fclose(fp);
+      return rb_intern(\"foo\");
+    }"
+    end
+  end
+end
+
+p /#{ARGV[0]}/
+
+Rack.search ARGV[0]
