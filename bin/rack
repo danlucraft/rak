@@ -87,7 +87,8 @@ END
       [ '-v', GetoptLong::NO_ARGUMENT ],
       [ '-n', GetoptLong::NO_ARGUMENT ],
       [ '-Q', GetoptLong::NO_ARGUMENT ],
-      [ '-o', GetoptLong::NO_ARGUMENT ]
+      [ '-o', GetoptLong::NO_ARGUMENT ],
+      [ '-w', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -104,6 +105,7 @@ END
     opt[:descend] = true
     opt[:literal] = false
     opt[:print_match] = false
+    opt[:match_whole_words] = false
     
     opts.each do |option, arg|
       case option
@@ -140,6 +142,8 @@ END
         opt[:print_match] = true
         opt[:print_filename] = false
         opt[:print_highlighted] = false
+      when '-w'
+        opt[:match_whole_words] = true
       end
     end
     files = get_files
@@ -180,6 +184,9 @@ END
   def self.search2(str, files)
     if opt[:literal]
       str = Regexp.quote(str)
+    end
+    if opt[:match_whole_words]
+      str = "\\b" + str + "\\b"
     end
     if $use_onig
       if opt[:ignore_case]
@@ -319,7 +326,7 @@ Example: rack -i select
 Searching:
   -i, --ignore-case     Ignore case distinctions
   -v, --invert-match    Invert match: select non-matching lines
-#  -w, --word-regexp     Force PATTERN to match only whole words
+  -w, --word-regexp     Force PATTERN to match only whole words
   -Q, --literal         Quote all metacharacters; expr is literal
 
 Search output:
@@ -327,7 +334,7 @@ Search output:
                         Only print filenames containing matches
 #  -L, --files-without-match
                         Only print filenames with no match
-#  -o                    Show only the part of a line matching PATTERN
+  -o                    Show only the part of a line matching PATTERN
                         (turns off text highlighting)
 #  --passthru            Print all lines, whether matching or not
   --output=expr         Output the evaluation of expr for each line

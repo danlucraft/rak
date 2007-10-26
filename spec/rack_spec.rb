@@ -152,6 +152,9 @@ Cap
 END
   end
   
+  it "matches whole words only with -w" do
+    strip_ansi(%x{rack Cap -w}).should == ""
+  end
 end
 
 describe "Rack", "with combinations of options" do
