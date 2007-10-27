@@ -194,6 +194,15 @@ foo foo foo Gemenon foo foo foo
 
 END
   end
+  
+  it "--nocolour means do not colourize the output" do
+    asterize_ansi(%x{rack Cap --nocolour}).should == t=<<END
+foo.rb
+3: foo foo foo Caprica foo foo foo
+4: foo Capsicum foo foo foo foo foo
+
+END
+  end
 end
 
 describe "Rack", "with combinations of options" do

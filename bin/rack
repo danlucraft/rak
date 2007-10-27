@@ -94,7 +94,11 @@ END
       [ '-l', GetoptLong::NO_ARGUMENT ],
       [ '-L', GetoptLong::NO_ARGUMENT ],
       [ '--passthru', GetoptLong::NO_ARGUMENT ],
-      [ '-H', GetoptLong::NO_ARGUMENT ]
+      [ '-H', GetoptLong::NO_ARGUMENT ],
+      [ '--colour', GetoptLong::NO_ARGUMENT ],
+      [ '--nocolour', GetoptLong::NO_ARGUMENT ],
+      [ '--color', GetoptLong::NO_ARGUMENT ],
+      [ '--nocolor', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -116,6 +120,7 @@ END
     opt[:print_file_if_match] = false
     opt[:print_file_if_no_match] = false
     opt[:print_entire_line_if_no_match] = false
+    opt[:colour] = true
     
     opts.each do |option, arg|
       case option
@@ -172,9 +177,20 @@ END
         opt[:print_entire_line_if_no_match] = true
       when '-H'
         opt[:print_filename] = true
+      when '--nocolour', '--nocolor'
+        opt[:colour] = false
+      when '--colour', '--color'
+        opt[:colour] = true
       end
     end
     files = get_files
+    
+    unless opt[:colour]
+      FILE_COLOUR.replace ""
+      CLEAR_COLOURS.replace ""
+      MATCH_COLOUR.replace ""
+    end
+    
     print_files(files)      if opt[:print_filelist]
     search2(ARGV[0], files) if opt[:do_search]
   end
@@ -396,7 +412,7 @@ Search output:
   --nogroup             One result per line, including filename, like grep
                         (default: on when the output is redirected)
 
-#  --[no]color           Highlight the matching text (default: on unless
+  --[no]color           Highlight the matching text (default: on unless
                         output is redirected, or on Windows)
 
 File finding:
