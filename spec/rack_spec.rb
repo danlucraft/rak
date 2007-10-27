@@ -307,6 +307,28 @@ foo.rb
 END
   end
   
+  it "-C means show 2 lines before and after" do 
+    strip_ansi(%x{rack Caps -C}).should == t=<<END
+foo.rb
+   2|
+   3|foo foo foo Caprica foo foo foo
+   4|foo Capsicum foo foo foo foo foo
+   5|
+   6|foo foo foo foo foo Pikon foo foo
+
+END
+  end
+  
+  it "-C 1means show 1 lines before and after" do 
+    strip_ansi(%x{rack Caps -C 1}).should == t=<<END
+foo.rb
+   3|foo foo foo Caprica foo foo foo
+   4|foo Capsicum foo foo foo foo foo
+   5|
+
+END
+  end
+  
 end
 
 describe "Rack", "with combinations of options" do

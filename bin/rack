@@ -122,7 +122,8 @@ END
       [ '--follow', GetoptLong::NO_ARGUMENT ],
       [ '--nofollow', GetoptLong::NO_ARGUMENT ],
       [ '--after-context', '-A', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ]
+      [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
+      [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ]
     )
 
     dir = nil
@@ -238,6 +239,15 @@ END
       when '--before-context'
         opt[:use_context] = true
         opt[:before_context] = arg.to_i
+      when '--context'
+        opt[:use_context] = true
+        if arg == ""
+          val = 2
+        else
+          val = arg.to_i
+        end
+        opt[:before_context] = val
+        opt[:after_context] = val
       end
     end
     files = get_files
@@ -551,13 +561,13 @@ Search output:
   --[no]colour          Highlight the matching text (default: on unless
                         output is redirected, or on Windows)
                                              
-#  -A NUM, --after-context=NUM
+  -A NUM, --after-context=NUM
                         Print NUM lines of trailing context after matching
                         lines.
-#  -B NUM, --before-context=NUM
+  -B NUM, --before-context=NUM
                         Print NUM lines of leading context before matching
                         lines.
-#  -C [NUM], --context[=NUM]
+  -C [NUM], --context[=NUM]
                         Print NUM lines (default 2) of output context.
 
 File finding:
