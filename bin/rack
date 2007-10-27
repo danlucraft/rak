@@ -89,7 +89,9 @@ END
       [ '-Q', GetoptLong::NO_ARGUMENT ],
       [ '-o', GetoptLong::NO_ARGUMENT ],
       [ '-w', GetoptLong::NO_ARGUMENT ],
-      [ '--nogroup', GetoptLong::NO_ARGUMENT ]
+      [ '--nogroup', GetoptLong::NO_ARGUMENT ],
+      [ '-l', GetoptLong::NO_ARGUMENT ],
+      [ '-L', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -108,6 +110,8 @@ END
     opt[:print_match] = false
     opt[:match_whole_words] = false
     opt[:print_file_each_line] = false
+    opt[:print_file_if_match] = false
+    opt[:print_file_if_no_match] = false
     
     opts.each do |option, arg|
       case option
@@ -149,6 +153,14 @@ END
       when '--nogroup'
         opt[:print_file_each_line] = true
         opt[:print_filename] = false
+      when '-l'
+        opt[:print_filename] = false
+        opt[:print_highlighted] = false
+        opt[:print_file_if_match] = true
+      when '-L'
+        opt[:print_filename] = false
+        opt[:print_highlighted] = false
+        opt[:print_file_if_no_match] = true
       end
     end
     files = get_files
@@ -293,6 +305,17 @@ END
         puts "#{fn}:#{count}"
       end
     end
+    if opt[:print_file_if_match]
+      if count > 0
+        puts fn
+      end
+    end
+    
+    if opt[:print_file_if_no_match]
+      if count == 0
+        puts fn
+      end
+    end
   end
   
   def self.print_highlighted(prefix, line, matches)
@@ -339,9 +362,9 @@ Searching:
   -Q, --literal         Quote all metacharacters; expr is literal
 
 Search output:
-#  -l, --files-with-matches
+  -l, --files-with-matches
                         Only print filenames containing matches
-#  -L, --files-without-match
+  -L, --files-without-match
                         Only print filenames with no match
   -o                    Show only the part of a line matching PATTERN
                         (turns off text highlighting)

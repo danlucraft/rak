@@ -162,6 +162,18 @@ END
 *foo.rb* 4: foo *Cap*sicum foo foo foo foo foo
 END
   end
+  
+  it "-l means only print filenames with matches" do
+    asterize_ansi(%x{rack Caprica -l}).should == t=<<END
+foo.rb
+END
+  end
+  
+  it "-L means only print filenames without matches" do
+    asterize_ansi(%x{rack Caprica -L}).should == t=<<END
+dir1/bar.rb
+END
+  end
 end
 
 describe "Rack", "with combinations of options" do
