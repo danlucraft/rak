@@ -212,6 +212,7 @@ END
           arr = opt[:includes]
         end
         exts = FILE_TYPES[type.intern]
+        unknown_type(type) unless exts
         exts.each do |ext|
           arr << '.' + ext
         end
@@ -424,6 +425,12 @@ END
         print line[ptr..(matches[n+1].begin-1+ptr)]
       end
     end
+  end
+  
+  def self.unknown_type(type)
+    puts "rack: Unknown --type \"#{type}\""
+    puts "rack: See rack --help types"
+    exit
   end
 end
 

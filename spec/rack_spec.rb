@@ -87,17 +87,6 @@ Cap
 END
   end
   
-  it "--version prints version information" do
-    strip_ansi(%x{rack --version}).should == t=<<END
-rack 0.0.1
-
-Copyright 2007 Daniel Lucraft, all rights reserved. 
-Based on the perl tool 'ack' by Andy Lester.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Ruby.
-END
-  end
   
   it "-c prints only the number of matches found per file" do
     strip_ansi(%x{rack Pik -c}).should == t=<<END
@@ -266,5 +255,30 @@ quux.py:1
 dir1/bar.rb:7
 foo.rb:11
 END
+  end
+end
+
+describe "Rack", "help and errors" do
+  it "--version prints version information" do
+    strip_ansi(%x{rack --version}).should == t=<<END
+rack 0.0.1
+
+Copyright 2007 Daniel Lucraft, all rights reserved. 
+Based on the perl tool 'ack' by Andy Lester.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Ruby.
+END
+  end
+  
+  it "prints unknown type errors" do
+    %x{rack Virg --type=pyth}.should == t=<<END
+rack: Unknown --type "pyth"
+rack: See rack --help types
+END
+  end
+  
+  it "--help prints help information" do
+    %x{rack Virg --help}.split("\n")[0].should == "Usage: rack [OPTION]... PATTERN [FILES]"
   end
 end
