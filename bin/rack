@@ -371,7 +371,7 @@ END
           if matches.empty?
             if opt[:print_highlighted]
               if opt[:print_filename]
-                print "#{i}: "
+                print "#{i.to_s.rjust(4)}|"
               end
               puts "#{line}"
             end
@@ -394,10 +394,10 @@ END
             end
             if opt[:print_highlighted]
               if opt[:print_filename]
-                prefix = "#{i}: "
+                prefix = "#{i.to_s.rjust(4)}|"
               else
                 if opt[:print_file_each_line]
-                  prefix = FILE_COLOUR + "#{fn}" + CLEAR_COLOURS + " #{i}: "
+                  prefix = FILE_COLOUR + "#{fn}" + CLEAR_COLOURS + " #{i.to_s.rjust(4)}|"
                 else
                   prefix = ""
                 end
@@ -535,7 +535,7 @@ File inclusion/exclusion:
   --noruby              Exclude Ruby files.
   --type=noruby         Exclude Ruby files.
                         See "ack --help type" for supported filetypes.
-#  --[no]follow          Follow symlinks.  Default is off.
+  --[no]follow          Follow symlinks.  Default is off.
 
 Miscellaneous:
   --help                This help

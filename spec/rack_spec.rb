@@ -16,8 +16,8 @@ describe "Rack", "with no options" do
   it "prints all matches from files in the current directory" do
     asterize_ansi(%x{rack Cap.ic}).should == t=<<END
 *foo.rb*
-3: foo foo foo *Capric*a foo foo foo
-4: foo *Capsic*um foo foo foo foo foo
+   3|foo foo foo *Capric*a foo foo foo
+   4|foo *Capsic*um foo foo foo foo foo
 
 END
   end
@@ -25,13 +25,13 @@ END
   it "prints all matches correctly" do
     strip_ansi(%x{rack foo}).should == t=<<END
 foo.rb
-3: foo foo foo Caprica foo foo foo
-4: foo Capsicum foo foo foo foo foo
-6: foo foo foo foo foo Pikon foo foo
-8: foo Pikon foo foo foo foo foo foo
-10: foo foo Six foo foo foo Six foo
-11: foo foo foo foo Six foo foo foo
-13: foo foo foo Gemenon foo foo foo
+   3|foo foo foo Caprica foo foo foo
+   4|foo Capsicum foo foo foo foo foo
+   6|foo foo foo foo foo Pikon foo foo
+   8|foo Pikon foo foo foo foo foo foo
+  10|foo foo Six foo foo foo Six foo
+  11|foo foo foo foo Six foo foo foo
+  13|foo foo foo Gemenon foo foo foo
 
 END
   end
@@ -39,12 +39,12 @@ END
   it "prints all matches from files in subdirectories" do
     asterize_ansi(%x{rack  Pikon}).should == t=<<END
 *dir1/bar.rb*
-2: bar bar bar bar *Pikon* bar
-9: bar bar *Pikon* bar bar bar
+   2|bar bar bar bar *Pikon* bar
+   9|bar bar *Pikon* bar bar bar
 
 *foo.rb*
-6: foo foo foo foo foo *Pikon* foo foo
-8: foo *Pikon* foo foo foo foo foo foo
+   6|foo foo foo foo foo *Pikon* foo foo
+   8|foo *Pikon* foo foo foo foo foo foo
 
 END
   end
@@ -52,8 +52,8 @@ END
   it "prints multiple matches in a line" do
     asterize_ansi(%x{rack Six}).should == t=<<END
 *foo.rb*
-10: foo foo *Six* foo foo foo *Six* foo
-11: foo foo foo foo *Six* foo foo foo
+  10|foo foo *Six* foo foo foo *Six* foo
+  11|foo foo foo foo *Six* foo foo foo
 
 END
   end
@@ -79,7 +79,7 @@ END
   it "prints a maximum number of matches if --max-count=x is specified" do
     strip_ansi(%x{rack Cap.ic -m 1}).should == t=<<END
 foo.rb
-3: foo foo foo Caprica foo foo foo
+   3|foo foo foo Caprica foo foo foo
 
 END
   end
@@ -112,8 +112,8 @@ END
   it "ignores case with -i" do
     strip_ansi(%x{rack six -i}).should == t=<<END
 foo.rb
-10: foo foo Six foo foo foo Six foo
-11: foo foo foo foo Six foo foo foo
+  10|foo foo Six foo foo foo Six foo
+  11|foo foo foo foo Six foo foo foo
 
 END
   end
@@ -121,24 +121,24 @@ END
   it "inverts the match with -v" do
     strip_ansi(%x{rack foo -v}).should == t=<<END
 quux.py
-1: quux quux quux quux Virgon quux quux
+   1|quux quux quux quux Virgon quux quux
 dir1/bar.rb
-1: 
-2: bar bar bar bar Pikon bar
-3:  
-4: 
-5: 
-6: 
-7: 
-8: 
-9: bar bar Pikon bar bar bar
+   1|
+   2|bar bar bar bar Pikon bar
+   3| 
+   4|
+   5|
+   6|
+   7|
+   8|
+   9|bar bar Pikon bar bar bar
 foo.rb
-1: 
-2: 
-5: 
-7: 
-9: 
-12: 
+   1|
+   2|
+   5|
+   7|
+   9|
+  12|
 
 END
   end
@@ -146,8 +146,8 @@ END
   it "doesn't descend into subdirs with -n" do
     strip_ansi(%x{rack Pikon -n}).should == t=<<END
 foo.rb
-6: foo foo foo foo foo Pikon foo foo
-8: foo Pikon foo foo foo foo foo foo
+   6|foo foo foo foo foo Pikon foo foo
+   8|foo Pikon foo foo foo foo foo foo
 
 END
   end
@@ -169,8 +169,8 @@ END
   
    it "prints the file on each line with --nogroup" do
     asterize_ansi(%x{rack Cap --nogroup}).should == t=<<END
-*foo.rb* 3: foo foo foo *Cap*rica foo foo foo
-*foo.rb* 4: foo *Cap*sicum foo foo foo foo foo
+*foo.rb*    3|foo foo foo *Cap*rica foo foo foo
+*foo.rb*    4|foo *Cap*sicum foo foo foo foo foo
 END
   end
   
@@ -193,7 +193,7 @@ quux quux quux quux Virgon quux quux
 
 
 *foo.rb*
-3: foo foo foo *Caprica* foo foo foo
+   3|foo foo foo *Caprica* foo foo foo
 foo Capsicum foo foo foo foo foo
 
 foo foo foo foo foo Pikon foo foo
@@ -211,8 +211,8 @@ END
   it "--nocolour means do not colourize the output" do
     asterize_ansi(%x{rack Cap --nocolour}).should == t=<<END
 foo.rb
-3: foo foo foo Caprica foo foo foo
-4: foo Capsicum foo foo foo foo foo
+   3|foo foo foo Caprica foo foo foo
+   4|foo Capsicum foo foo foo foo foo
 
 END
   end
@@ -220,7 +220,7 @@ END
   it "-a means to search every file" do
     asterize_ansi(%x{rack Libris -a}).should == t=<<END
 *qux*
-1: qux qux qux *Libris* qux qux qux
+   1|qux qux qux *Libris* qux qux qux
 
 END
     
@@ -261,10 +261,10 @@ END
   it "--follow means follow symlinks" do 
     strip_ansi(%x{rack Sagitarron --follow}).should == t=<<END
 corge.rb
-1: corge corge corge Sagitarron corge
+   1|corge corge corge Sagitarron corge
 
 ln_dir/corge.rb
-1: corge corge corge Sagitarron corge
+   1|corge corge corge Sagitarron corge
 
 END
   end
