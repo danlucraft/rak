@@ -117,7 +117,8 @@ END
       [ '--color', GetoptLong::NO_ARGUMENT ],
       [ '--nocolor', GetoptLong::NO_ARGUMENT ],
       [ '-a', GetoptLong::NO_ARGUMENT ],
-      [ '--type', GetoptLong::REQUIRED_ARGUMENT ]
+      [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
+      [ '--sort-files', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -141,6 +142,7 @@ END
     opt[:print_entire_line_if_no_match] = false
     opt[:colour] = true
     opt[:all_files] = false
+    opt[:sort_files] = false
     
     opts.each do |option, arg|
       case option
@@ -216,6 +218,8 @@ END
         exts.each do |ext|
           arr << '.' + ext
         end
+      when '--sort-files'
+        opt[:sort_files] = true
       end
     end
     files = get_files
@@ -278,7 +282,12 @@ END
     end
     
     # remove the "./"
-    files.map{|fn| fn[2..-1]}
+    files.map! {|fn| fn[2..-1]}
+    
+    if opt[:sort_files]
+      files.sort!
+    end
+    files
   end
     
   def self.search2(str, files)
@@ -481,7 +490,7 @@ File finding:
   -f                    Only print the files found, without searching.
                         The PATTERN must not be specified.
 #  -g=REGEX              Same as -f, but only print files matching REGEX.
-#  --sort-files          Sort the found files lexically.
+  --sort-files          Sort the found files lexically.
 
 File inclusion/exclusion:
   -n                    No descending into subdirectories

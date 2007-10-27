@@ -246,6 +246,13 @@ END
     asterize_ansi(%x{rack Cap --type=noruby}).should == ""
   end
   
+  it "--sort-files" do
+    %x{rack -f --sort-files}.should == t=<<END
+dir1/bar.rb
+foo.rb
+quux.py
+END
+  end
 end
 
 describe "Rack", "with combinations of options" do
