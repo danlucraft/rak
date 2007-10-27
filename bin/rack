@@ -74,6 +74,23 @@ END
   def self.search
 
     @opt = {}
+
+    # file types
+    opt[:includes] = []
+    opt[:excludes] = []
+    
+    FILE_TYPES.each do |type, exts|
+      if ARGV.delete('--'+type.to_s)
+        exts.each do |ext|
+          opt[:includes] << '.' + ext
+        end
+      end
+      if ARGV.delete('--no'+type.to_s)
+        exts.each do |ext|
+          opt[:excludes] << '.' + ext
+        end
+      end
+    end
     
     opts = GetoptLong.new(
       [ '--help', GetoptLong::NO_ARGUMENT ],
@@ -98,7 +115,8 @@ END
       [ '--colour', GetoptLong::NO_ARGUMENT ],
       [ '--nocolour', GetoptLong::NO_ARGUMENT ],
       [ '--color', GetoptLong::NO_ARGUMENT ],
-      [ '--nocolor', GetoptLong::NO_ARGUMENT ]
+      [ '--nocolor', GetoptLong::NO_ARGUMENT ],
+      [ '-a', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -121,6 +139,7 @@ END
     opt[:print_file_if_no_match] = false
     opt[:print_entire_line_if_no_match] = false
     opt[:colour] = true
+    opt[:all_files] = false
     
     opts.each do |option, arg|
       case option
@@ -181,6 +200,8 @@ END
         opt[:colour] = false
       when '--colour', '--color'
         opt[:colour] = true
+      when '-a'
+        opt[:all_files] = true
       end
     end
     files = get_files
@@ -209,16 +230,37 @@ END
     else
       glob = "*"
     end
+    
     files = Dir[dir+glob].select do |fn|
-      File.file? fn and 
-        types.include? File.extname(fn) and
+      File.file? fn
+    end
+    
+    unless opt[:all_files]
+      files = files.select do |fn|
+        types.include? File.extname(fn)
+      end
+      files = files.select do |fn|
         fn[-1..-1] != "~" and
-        fn[-1..-1] != "#"
+          fn[-1..-1] != "#"
+      end
     end
     
     # reject version control dirs
     files.reject! do |fn|
       VC_DIRS.any? {|vc| fn.include? vc}
+    end
+    
+    # select based on file type
+    if not opt[:includes].empty?
+      files = files.select do |fn|
+        opt[:includes].include?(File.extname(fn))
+      end
+    end
+    
+    if not opt[:excludes].empty?
+      files = files.select do |fn|
+        not opt[:excludes].include?(File.extname(fn))
+      end
     end
     
     # remove the "./"
@@ -366,7 +408,7 @@ END
       if n == matches.length - 1
         puts matches.last.post_match
       else
-        print line[to..(matches[n+1].begin-1+to)]
+        print line[ptr..(matches[n+1].begin-1+ptr)]
       end
     end
   end
@@ -412,7 +454,7 @@ Search output:
   --nogroup             One result per line, including filename, like grep
                         (default: on when the output is redirected)
 
-  --[no]color           Highlight the matching text (default: on unless
+  --[no]colour          Highlight the matching text (default: on unless
                         output is redirected, or on Windows)
 
 File finding:
@@ -423,11 +465,11 @@ File finding:
 
 File inclusion/exclusion:
   -n                    No descending into subdirectories
-#  -a, --all             All files, regardless of extension (but still skips
+  -a, --all             All files, regardless of extension (but still skips
                         blib, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
-#  --ruby                Include only Ruby files.
+  --ruby                Include only Ruby files.
 #  --type=ruby           Include only Ruby files.
-#  --noruby              Exclude Ruby files.
+  --noruby              Exclude Ruby files.
 #  --type=noruby         Exclude Ruby files.
                         See "ack --help type" for supported filetypes.
 #  --[no]follow          Follow symlinks.  Default is off.

@@ -22,6 +22,20 @@ describe "Rack", "with no options" do
 END
   end
   
+  it "prints all matches correctly" do
+    strip_ansi(%x{rack foo}).should == t=<<END
+foo.rb
+3: foo foo foo Caprica foo foo foo
+4: foo Capsicum foo foo foo foo foo
+6: foo foo foo foo foo Pikon foo foo
+8: foo Pikon foo foo foo foo foo foo
+10: foo foo Six foo foo foo Six foo
+11: foo foo foo foo Six foo foo foo
+13: foo foo foo Gemenon foo foo foo
+
+END
+  end
+
   it "prints all matches from files in subdirectories" do
     asterize_ansi(%x{rack  Pikon}).should == t=<<END
 *dir1/bar.rb*
@@ -52,6 +66,7 @@ end
 describe "Rack", "options" do
   it "prints only files with --files" do
     %x{rack -f}.should == t=<<END
+quux.py
 dir1/bar.rb
 foo.rb
 END
@@ -86,6 +101,7 @@ END
   
   it "-c prints only the number of matches found per file" do
     strip_ansi(%x{rack Pik -c}).should == t=<<END
+quux.py:0
 dir1/bar.rb:2
 foo.rb:2
 END
@@ -111,6 +127,8 @@ END
   
   it "inverts the match with -v" do
     strip_ansi(%x{rack foo -v}).should == t=<<END
+quux.py
+1: quux quux quux quux Virgon quux quux
 dir1/bar.rb
 1: 
 2: bar bar bar bar Pikon bar
@@ -171,12 +189,14 @@ END
   
   it "-L means only print filenames without matches" do
     asterize_ansi(%x{rack Caprica -L}).should == t=<<END
+quux.py
 dir1/bar.rb
 END
   end
   
   it "--passthru means print all lines whether matching or not" do
     asterize_ansi(%x{rack Caprica --passthru -n}).should == t=<<END
+quux quux quux quux Virgon quux quux
 
 
 *foo.rb*
@@ -203,11 +223,34 @@ foo.rb
 
 END
   end
+  
+  it "-a means to search every file" do
+    asterize_ansi(%x{rack Libris -a}).should == t=<<END
+*qux*
+1: qux qux qux *Libris* qux qux qux
+
+END
+    
+  end
+  
+  it "--ruby means only ruby files" do
+    asterize_ansi(%x{rack Virgon --ruby}).should == ""
+  end
+  
+  it "--python means only python files" do
+    asterize_ansi(%x{rack Cap --python}).should == ""
+  end
+  
+  it "--noruby means exclude ruby files" do
+    asterize_ansi(%x{rack Cap --noruby}).should == ""
+  end
+  
 end
 
 describe "Rack", "with combinations of options" do
   it "should process -c -v " do
     strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
+quux.py:1
 dir1/bar.rb:7
 foo.rb:11
 END
