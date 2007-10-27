@@ -116,7 +116,8 @@ END
       [ '--nocolour', GetoptLong::NO_ARGUMENT ],
       [ '--color', GetoptLong::NO_ARGUMENT ],
       [ '--nocolor', GetoptLong::NO_ARGUMENT ],
-      [ '-a', GetoptLong::NO_ARGUMENT ]
+      [ '-a', GetoptLong::NO_ARGUMENT ],
+      [ '--type', GetoptLong::REQUIRED_ARGUMENT ]
     )
 
     dir = nil
@@ -202,6 +203,18 @@ END
         opt[:colour] = true
       when '-a'
         opt[:all_files] = true
+      when '--type'
+        if arg[0..1] == "no"
+          type = arg[2..-1]
+          arr = opt[:excludes]
+        else
+          type = arg
+          arr = opt[:includes]
+        end
+        exts = FILE_TYPES[type.intern]
+        exts.each do |ext|
+          arr << '.' + ext
+        end
       end
     end
     files = get_files

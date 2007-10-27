@@ -245,6 +245,18 @@ END
     asterize_ansi(%x{rack Cap --noruby}).should == ""
   end
   
+  it "--type=ruby means only ruby files" do
+    asterize_ansi(%x{rack Virgon --type=ruby}).should == ""
+  end
+  
+  it "--type=python means only python files" do
+    asterize_ansi(%x{rack Cap --type=python}).should == ""
+  end
+  
+  it "--type=noruby means exclude ruby files" do
+    asterize_ansi(%x{rack Cap --type=noruby}).should == ""
+  end
+  
 end
 
 describe "Rack", "with combinations of options" do
