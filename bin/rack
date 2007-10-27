@@ -253,6 +253,11 @@ END
       File.file? fn
     end
     
+    # remove symlinks
+    files = files.reject do |fn|
+      File.symlink? fn
+    end
+    
     unless opt[:all_files]
       files = files.select do |fn|
         types.include? File.extname(fn)

@@ -61,6 +61,10 @@ END
   it "skips VC dirs" do
     %x{rack Aerelon}.should == ""
   end
+  
+  it "does not follow symlinks" do
+    %x{rack Sagitarron}.should == ""
+  end
 end
 
 describe "Rack", "options" do
