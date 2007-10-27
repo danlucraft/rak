@@ -91,7 +91,8 @@ END
       [ '-w', GetoptLong::NO_ARGUMENT ],
       [ '--nogroup', GetoptLong::NO_ARGUMENT ],
       [ '-l', GetoptLong::NO_ARGUMENT ],
-      [ '-L', GetoptLong::NO_ARGUMENT ]
+      [ '-L', GetoptLong::NO_ARGUMENT ],
+      [ '--passthru', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -112,6 +113,7 @@ END
     opt[:print_file_each_line] = false
     opt[:print_file_if_match] = false
     opt[:print_file_if_no_match] = false
+    opt[:print_entire_line_if_no_match] = false
     
     opts.each do |option, arg|
       case option
@@ -161,6 +163,8 @@ END
         opt[:print_filename] = false
         opt[:print_highlighted] = false
         opt[:print_file_if_no_match] = true
+      when '--passthru'
+        opt[:print_entire_line_if_no_match] = true
       end
     end
     files = get_files
@@ -261,7 +265,11 @@ END
           end
           matches.clear
         else
-          unless matches.empty?
+          if matches.empty?
+            if opt[:print_entire_line_if_no_match]
+              puts line
+            end
+          else
             if opt[:print_filename]
               unless displayed_filename
                 puts FILE_COLOUR + fn + CLEAR_COLOURS
@@ -368,7 +376,7 @@ Search output:
                         Only print filenames with no match
   -o                    Show only the part of a line matching PATTERN
                         (turns off text highlighting)
-#  --passthru            Print all lines, whether matching or not
+  --passthru            Print all lines, whether matching or not
   --output=expr         Output the evaluation of expr for each line
                         (turns off text highlighting)
   -m, --max-count=NUM   Stop searching in a file after NUM matches

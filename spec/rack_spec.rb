@@ -174,6 +174,26 @@ END
 dir1/bar.rb
 END
   end
+  
+  it "--passthru means print all lines whether matching or not" do
+    asterize_ansi(%x{rack Caprica --passthru -n}).should == t=<<END
+
+
+*foo.rb*
+3: foo foo foo *Caprica* foo foo foo
+foo Capsicum foo foo foo foo foo
+
+foo foo foo foo foo Pikon foo foo
+
+foo Pikon foo foo foo foo foo foo
+
+foo foo Six foo foo foo Six foo
+foo foo foo foo Six foo foo foo
+
+foo foo foo Gemenon foo foo foo
+
+END
+  end
 end
 
 describe "Rack", "with combinations of options" do
