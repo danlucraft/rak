@@ -481,9 +481,9 @@ File inclusion/exclusion:
   -a, --all             All files, regardless of extension (but still skips
                         blib, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
-#  --type=ruby           Include only Ruby files.
+  --type=ruby           Include only Ruby files.
   --noruby              Exclude Ruby files.
-#  --type=noruby         Exclude Ruby files.
+  --type=noruby         Exclude Ruby files.
                         See "ack --help type" for supported filetypes.
 #  --[no]follow          Follow symlinks.  Default is off.
 
