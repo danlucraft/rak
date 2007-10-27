@@ -268,6 +268,45 @@ ln_dir/corge.rb
 
 END
   end
+  
+  it "-A NUM means show NUM lines after" do 
+    strip_ansi(%x{rack Caps -A 2}).should == t=<<END
+foo.rb
+   4|foo Capsicum foo foo foo foo foo
+   5|
+   6|foo foo foo foo foo Pikon foo foo
+
+END
+  end
+  
+  it "-A should work when there are matches close together" do 
+    strip_ansi(%x{rack foo -A 2}).should == t=<<END
+foo.rb
+   3|foo foo foo Caprica foo foo foo
+   4|foo Capsicum foo foo foo foo foo
+   5|
+   6|foo foo foo foo foo Pikon foo foo
+   7|
+   8|foo Pikon foo foo foo foo foo foo
+   9|
+  10|foo foo Six foo foo foo Six foo
+  11|foo foo foo foo Six foo foo foo
+  12|
+  13|foo foo foo Gemenon foo foo foo
+
+END
+  end
+  
+  it "-B NUM means show NUM lines before" do 
+    strip_ansi(%x{rack Caps -B 2}).should == t=<<END
+foo.rb
+   2|
+   3|foo foo foo Caprica foo foo foo
+   4|foo Capsicum foo foo foo foo foo
+
+END
+  end
+  
 end
 
 describe "Rack", "with combinations of options" do

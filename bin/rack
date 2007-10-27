@@ -120,7 +120,9 @@ END
       [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--sort-files', GetoptLong::NO_ARGUMENT ],
       [ '--follow', GetoptLong::NO_ARGUMENT ],
-      [ '--nofollow', GetoptLong::NO_ARGUMENT ]
+      [ '--nofollow', GetoptLong::NO_ARGUMENT ],
+      [ '--after-context', '-A', GetoptLong::REQUIRED_ARGUMENT ],
+      [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ]
     )
 
     dir = nil
@@ -146,6 +148,9 @@ END
     opt[:all_files] = false
     opt[:sort_files] = false
     opt[:follow_symlinks] = false
+    opt[:after_context] = 0
+    opt[:before_context] = 0
+    opt[:collect_context] = false
     
     opts.each do |option, arg|
       case option
@@ -227,6 +232,12 @@ END
         opt[:follow_symlinks] = true
       when '--nofollow'
         opt[:follow_symlinks] = false
+      when '--after-context'
+        opt[:use_context] = true
+        opt[:after_context] = arg.to_i
+      when '--before-context'
+        opt[:use_context] = true
+        opt[:before_context] = arg.to_i
       end
     end
     files = get_files
@@ -345,6 +356,11 @@ END
     count = 0
     i = 0
     matches = []
+    print_num = 0
+    if opt[:before_context] > 0
+      before_context = []
+      before_context_size = opt[:before_context]
+    end
     File.open(fn) do |f|
       f.each_line do |line|
         i += 1
@@ -382,12 +398,36 @@ END
             if opt[:print_entire_line_if_no_match]
               puts line
             end
+            if opt[:use_context]
+              if print_num > 0
+                print_num -= 1
+                if opt[:print_highlighted]
+                  if opt[:print_filename]
+                    print "#{i.to_s.rjust(4)}|"
+                  end
+                  puts "#{line}"
+                end
+              end
+              if opt[:before_context] > 0
+                before_context << [i, line]
+                if before_context.length == before_context_size+1
+                  before_context = before_context[1..-1]
+                end
+              end
+            end
           else
+            print_num = opt[:after_context]
             if opt[:print_filename]
               unless displayed_filename
                 puts FILE_COLOUR + fn + CLEAR_COLOURS
                 displayed_filename = true
               end
+            end
+            if opt[:before_context] > 0
+              before_context.each do |before_i, before_line|
+                puts "#{before_i.to_s.rjust(4)}|" + before_line
+              end
+              before_context = []
             end
             if opt[:print_output]
               matches.each {|m| puts m}
