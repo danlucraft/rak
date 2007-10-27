@@ -67,6 +67,21 @@ END
   end
 end
 
+describe "Rack", "with FILE arguments" do
+  it "should only search in given files or directories" do
+    asterize_ansi(%x{rack Pikon foo.rb}).should == t=<<END
+   6|foo foo foo foo foo *Pikon* foo foo
+   8|foo *Pikon* foo foo foo foo foo foo
+END
+    strip_ansi(%x{rack Pikon dir1/}).should == t=<<END
+dir1/bar.rb
+   2|bar bar bar bar Pikon bar
+   9|bar bar Pikon bar bar bar
+
+END
+  end
+end
+
 describe "Rack", "options" do
   it "prints only files with --files" do
     %x{rack -f}.should == t=<<END

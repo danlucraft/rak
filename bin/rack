@@ -131,6 +131,7 @@ END
     opt[:max_count] = nil
     opt[:do_search] = true
     opt[:print_filename] = true
+    opt[:print_line_number] = true
     opt[:print_filelist] = false
     opt[:print_output] = nil
     opt[:print_highlighted] = true
@@ -165,6 +166,7 @@ END
         opt[:print_filelist] = true
       when '--output'
         opt[:print_filename] = false
+        opt[:print_line_number] = false
         opt[:print_output] = arg
         opt[:print_highlighted] = false
       when '--version'
@@ -173,9 +175,11 @@ END
       when '-c'
         opt[:print_num_matches] = true
         opt[:print_filename] = false
+        opt[:print_line_number] = false
         opt[:print_highlighted] = false
       when '-h'
         opt[:print_filename] = false
+        opt[:print_line_number] = false
       when '-i'
         opt[:ignore_case] = true
       when '-v'
@@ -187,6 +191,7 @@ END
       when '-o'
         opt[:print_match] = true
         opt[:print_filename] = false
+        opt[:print_line_number] = false
         opt[:print_highlighted] = false
       when '-w'
         opt[:match_whole_words] = true
@@ -196,18 +201,22 @@ END
       when '--nogroup'
         opt[:print_file_each_line] = true
         opt[:print_filename] = false
+        opt[:print_line_number] = false
       when '-l'
         opt[:print_filename] = false
+        opt[:print_line_number] = false
         opt[:print_highlighted] = false
         opt[:print_file_if_match] = true
       when '-L'
         opt[:print_filename] = false
+        opt[:print_line_number] = false
         opt[:print_highlighted] = false
         opt[:print_file_if_no_match] = true
       when '--passthru'
         opt[:print_entire_line_if_no_match] = true
       when '-H'
         opt[:print_filename] = true
+        opt[:print_line_number] = true
       when '--nocolour', '--nocolor'
         opt[:colour] = false
       when '--colour', '--color'
@@ -296,8 +305,25 @@ END
   def self.get_files(dir="./")
     types_files = FILE_TYPES.invert
     types = types_files.keys.flatten.map{|s| "."+s}
-
-    files = get_all_files
+    files_and_dirs = ARGV[1..-1]
+    
+    if !files_and_dirs or files_and_dirs.empty?
+      files = get_all_files
+    else
+      files = []
+      files_and_dirs.each do |thing|
+        if File.file? thing
+          files << thing
+        end
+        if File.directory? thing
+          get_all_files(files, thing)
+        end
+      end
+      if files_and_dirs.length == 1 and 
+          File.file? files_and_dirs[0]
+        opt[:print_filename] = false
+      end
+    end
     
     unless opt[:all_files]
       files = files.select do |fn|
@@ -328,11 +354,12 @@ END
     end
     
     # remove the "./"
-    files.map! {|fn| fn[2..-1]}
+    files.map! {|fn| fn[0..1] == "./" ? fn[2..-1] : fn}
     
     if opt[:sort_files]
       files.sort!
     end
+    
     files
   end
     
@@ -396,7 +423,7 @@ END
           end
           if matches.empty?
             if opt[:print_highlighted]
-              if opt[:print_filename]
+              if opt[:print_line_number]
                 print "#{i.to_s.rjust(4)}|"
               end
               puts "#{line}"
@@ -412,7 +439,7 @@ END
               if print_num > 0
                 print_num -= 1
                 if opt[:print_highlighted]
-                  if opt[:print_filename]
+                  if opt[:print_line_number]
                     print "#{i.to_s.rjust(4)}|"
                   end
                   puts "#{line}"
@@ -435,7 +462,10 @@ END
             end
             if opt[:before_context] > 0
               before_context.each do |before_i, before_line|
-                puts "#{before_i.to_s.rjust(4)}|" + before_line
+                if opt[:print_line_number]
+                  print "#{before_i.to_s.rjust(4)}|"
+                end
+                puts before_line
               end
               before_context = []
             end
@@ -443,7 +473,7 @@ END
               matches.each {|m| puts m}
             end
             if opt[:print_highlighted]
-              if opt[:print_filename]
+              if opt[:print_line_number]
                 prefix = "#{i.to_s.rjust(4)}|"
               else
                 if opt[:print_file_each_line]
@@ -524,11 +554,11 @@ __END__
 Usage: rack [OPTION]... PATTERN [FILES]
 
 Search for PATTERN in each source file in the tree from cwd on down.
-If [FILES] is specified, then only those files/directories are checked.
-ack may also search STDIN, but only if no FILES are specified, or if
-one of FILES is "-".
+#If [FILES] is specified, then only those files/directories are checked.
+#ack may also search STDIN, but only if no FILES are specified, or if
+#one of FILES is "-".
 
-Default switches may be specified in ACK_OPTIONS environment variable.
+#Default switches may be specified in ACK_OPTIONS environment variable.
 
 Example: rack -i select
 
@@ -584,7 +614,7 @@ File inclusion/exclusion:
   --type=ruby           Include only Ruby files.
   --noruby              Exclude Ruby files.
   --type=noruby         Exclude Ruby files.
-                        See "ack --help type" for supported filetypes.
+                        See "rack --help type" for supported filetypes.
   --[no]follow          Follow symlinks.  Default is off.
 
 Miscellaneous:
