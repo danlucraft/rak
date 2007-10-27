@@ -118,7 +118,9 @@ END
       [ '--nocolor', GetoptLong::NO_ARGUMENT ],
       [ '-a', GetoptLong::NO_ARGUMENT ],
       [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--sort-files', GetoptLong::NO_ARGUMENT ]
+      [ '--sort-files', GetoptLong::NO_ARGUMENT ],
+      [ '--follow', GetoptLong::NO_ARGUMENT ],
+      [ '--nofollow', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -143,6 +145,7 @@ END
     opt[:colour] = true
     opt[:all_files] = false
     opt[:sort_files] = false
+    opt[:follow_symlinks] = false
     
     opts.each do |option, arg|
       case option
@@ -220,6 +223,10 @@ END
         end
       when '--sort-files'
         opt[:sort_files] = true
+      when '--follow'
+        opt[:follow_symlinks] = true
+      when '--nofollow'
+        opt[:follow_symlinks] = false
       end
     end
     files = get_files
@@ -240,23 +247,36 @@ END
     end
   end
   
+  def self.get_all_files(files=[], dir="./")
+    Dir[dir+"*"].each do |fn|
+      if File.directory? fn
+        if opt[:descend] 
+          if File.symlink? fn
+            if opt[:follow_symlinks]
+              get_all_files(files, fn+"/")
+            end
+          else
+            get_all_files(files, fn+"/")
+          end
+        end
+      else
+        if File.symlink? fn
+          if opt[:follow_symlinks]
+            files << fn
+          end
+        else
+          files << fn
+        end
+      end
+    end
+    files
+  end
+  
   def self.get_files(dir="./")
     types_files = FILE_TYPES.invert
     types = types_files.keys.flatten.map{|s| "."+s}
-    if opt[:descend]
-      glob = "**/*"
-    else
-      glob = "*"
-    end
-    
-    files = Dir[dir+glob].select do |fn|
-      File.file? fn
-    end
-    
-    # remove symlinks
-    files = files.reject do |fn|
-      File.symlink? fn
-    end
+
+    files = get_all_files
     
     unless opt[:all_files]
       files = files.select do |fn|
@@ -490,6 +510,15 @@ Search output:
 
   --[no]colour          Highlight the matching text (default: on unless
                         output is redirected, or on Windows)
+                                             
+#  -A NUM, --after-context=NUM
+                        Print NUM lines of trailing context after matching
+                        lines.
+#  -B NUM, --before-context=NUM
+                        Print NUM lines of leading context before matching
+                        lines.
+#  -C [NUM], --context[=NUM]
+                        Print NUM lines (default 2) of output context.
 
 File finding:
   -f                    Only print the files found, without searching.

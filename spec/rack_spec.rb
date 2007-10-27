@@ -257,6 +257,17 @@ foo.rb
 quux.py
 END
   end
+  
+  it "--follow means follow symlinks" do 
+    strip_ansi(%x{rack Sagitarron --follow}).should == t=<<END
+corge.rb
+1: corge corge corge Sagitarron corge
+
+ln_dir/corge.rb
+1: corge corge corge Sagitarron corge
+
+END
+  end
 end
 
 describe "Rack", "with combinations of options" do
