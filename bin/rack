@@ -89,10 +89,12 @@ END
       [ '-Q', GetoptLong::NO_ARGUMENT ],
       [ '-o', GetoptLong::NO_ARGUMENT ],
       [ '-w', GetoptLong::NO_ARGUMENT ],
+      [ '--group', GetoptLong::NO_ARGUMENT ],
       [ '--nogroup', GetoptLong::NO_ARGUMENT ],
       [ '-l', GetoptLong::NO_ARGUMENT ],
       [ '-L', GetoptLong::NO_ARGUMENT ],
-      [ '--passthru', GetoptLong::NO_ARGUMENT ]
+      [ '--passthru', GetoptLong::NO_ARGUMENT ],
+      [ '-H', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -152,6 +154,9 @@ END
         opt[:print_highlighted] = false
       when '-w'
         opt[:match_whole_words] = true
+      when '--group'
+        opt[:print_filename] = true
+        opt[:print_file_each_line] = false
       when '--nogroup'
         opt[:print_file_each_line] = true
         opt[:print_filename] = false
@@ -165,6 +170,8 @@ END
         opt[:print_file_if_no_match] = true
       when '--passthru'
         opt[:print_entire_line_if_no_match] = true
+      when '-H'
+        opt[:print_filename] = true
       end
     end
     files = get_files
@@ -380,11 +387,11 @@ Search output:
   --output=expr         Output the evaluation of expr for each line
                         (turns off text highlighting)
   -m, --max-count=NUM   Stop searching in a file after NUM matches
-#  -H, --with-filename   Print the filename for each match
+  -H, --with-filename   Print the filename for each match
   -h, --no-filename     Suppress the prefixing filename on output
   -c, --count           Show number of lines matching per file
 
-#  --group               Group matches by file name.
+  --group               Group matches by file name.
                         (default: on when used interactively)
   --nogroup             One result per line, including filename, like grep
                         (default: on when the output is redirected)
