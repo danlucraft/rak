@@ -67,7 +67,7 @@ END
   end
 end
 
-describe "Rack", "with FILE arguments" do
+describe "Rack", "with FILE or STDIN inputs" do
   it "should only search in given files or directories" do
     asterize_ansi(%x{rack Pikon foo.rb}).should == t=<<END
    6|foo foo foo foo foo *Pikon* foo foo
@@ -334,7 +334,7 @@ foo.rb
 END
   end
   
-  it "-C 1means show 1 lines before and after" do 
+  it "-C 1 means show 1 lines before and after" do 
     strip_ansi(%x{rack Caps -C 1}).should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
@@ -344,7 +344,20 @@ foo.rb
 END
   end
   
+  it "-g REGEX only searches in files matching REGEX" do
+    asterize_ansi(%x{rack Pikon -g f.o}).should == t=<<END
+*foo.rb*
+   6|foo foo foo foo foo *Pikon* foo foo
+   8|foo *Pikon* foo foo foo foo foo foo
+
+END
+  end
+  
 end
+
+
+
+
 
 describe "Rack", "with combinations of options" do
   it "should process -c -v " do
@@ -355,6 +368,10 @@ foo.rb:11
 END
   end
 end
+
+
+
+
 
 describe "Rack", "help and errors" do
   it "--version prints version information" do

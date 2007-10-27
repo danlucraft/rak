@@ -123,7 +123,8 @@ END
       [ '--nofollow', GetoptLong::NO_ARGUMENT ],
       [ '--after-context', '-A', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ]
+      [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ],
+      [ '-g', GetoptLong::REQUIRED_ARGUMENT ]
     )
 
     dir = nil
@@ -153,6 +154,7 @@ END
     opt[:after_context] = 0
     opt[:before_context] = 0
     opt[:collect_context] = false
+    opt[:filename_regex] = nil
     
     opts.each do |option, arg|
       case option
@@ -257,6 +259,8 @@ END
         end
         opt[:before_context] = val
         opt[:after_context] = val
+      when '-g'
+        opt[:filename_regex] = arg
       end
     end
     files = get_files
@@ -351,6 +355,16 @@ END
       files = files.select do |fn|
         not opt[:excludes].include?(File.extname(fn))
       end
+    end
+
+    # filter based on -g=REGEX
+    if opt[:filename_regex]
+      if $use_onig
+        fn_re = Oniguruma::ORegexp.new(opt[:filename_regex])
+      else
+        fn_re = Regexp.new(opt[:filename_regex])
+      end
+      files = files.select {|fn| fn =~ fn_re }
     end
     
     # remove the "./"
@@ -554,8 +568,8 @@ __END__
 Usage: rack [OPTION]... PATTERN [FILES]
 
 Search for PATTERN in each source file in the tree from cwd on down.
-#If [FILES] is specified, then only those files/directories are checked.
-#ack may also search STDIN, but only if no FILES are specified, or if
+If [FILES] is specified, then only those files/directories are checked.
+#rack may also search STDIN, but only if no FILES are specified, or if
 #one of FILES is "-".
 
 #Default switches may be specified in ACK_OPTIONS environment variable.
@@ -603,11 +617,11 @@ Search output:
 File finding:
   -f                    Only print the files found, without searching.
                         The PATTERN must not be specified.
-#  -g=REGEX              Same as -f, but only print files matching REGEX.
   --sort-files          Sort the found files lexically.
 
 File inclusion/exclusion:
   -n                    No descending into subdirectories
+#  -g REGEX              Only search in file matching REGEX.
   -a, --all             All files, regardless of extension (but still skips
                         blib, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
