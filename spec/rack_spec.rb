@@ -104,6 +104,12 @@ END
    2|baz baz baz *Aere*lon baz baz baz
 END
   end
+  
+  it "only searches STDIN when piped to" do
+    asterize_ansi(%x{echo asdfCapasdf | rack Cap}).should == t=<<END
+   1|asdf*Cap*asdf
+END
+  end
 end
 
 describe "Rack", "options" do

@@ -338,10 +338,12 @@ END
     files_and_dirs = ARGV[1..-1]
     io_files = []
     if !files_and_dirs or files_and_dirs.empty?
-      files = get_all_files
       if STDIN.isatty == false
         io_files << STDIN
         opt[:print_filename] = false
+        files = []
+      else
+        files = get_all_files
       end
     else
       files = []
@@ -571,7 +573,8 @@ END
               prefix = "#{i.to_s.rjust(4)}|"
             else
               if opt[:print_file_each_line]
-                prefix = FILE_COLOUR + "#{fn}" + CLEAR_COLOURS + " #{i.to_s.rjust(4)}|"
+                fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + " " : "")
+                prefix = fn_str + "#{i.to_s.rjust(4)}|"
               else
                 prefix = ""
               end
