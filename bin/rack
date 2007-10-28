@@ -722,11 +722,11 @@ Miscellaneous:
   --help                This help
   --version             Display version & copyright
 __________
-Usage: ack [OPTION]... PATTERN [FILES]
+Usage: rack [OPTION]... PATTERN [FILES]
 
-The following is the list of filetypes supported by ack.  You can
+The following is the list of filetypes supported by rack.  You can
 specify a file type with the --type=TYPE format, or the --TYPE
-format.  For example, both --type=perl and --perl work.
+format.  For example, both --type=ruby and --ruby work.
 
 Note that some extensions may appear in multiple types.  For example,
 .pod files are both Perl and Parrot.
