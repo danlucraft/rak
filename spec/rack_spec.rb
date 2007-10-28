@@ -69,6 +69,14 @@ foo.rb   11|foo foo foo foo Six foo foo foo
 END
     ENV['RACK_TEST'] = "true"
   end
+
+  it "searches shebangs for valid inputs" do
+    asterize_ansi(%x{rack Aquaria}).should == t=<<END
+*shebang*
+   3|goo goo goo *Aquaria* goo goo
+
+END
+  end
 end
 
 describe "Rack", "with FILE or STDIN inputs" do
@@ -109,6 +117,7 @@ describe "Rack", "options" do
     %x{rack -f}.should == t=<<END
 quux.py
 dir1/bar.rb
+shebang
 foo.rb
 END
   end
@@ -133,6 +142,7 @@ END
     strip_ansi(%x{rack Pik -c}).should == t=<<END
 quux.py:0
 dir1/bar.rb:2
+shebang:0
 foo.rb:2
 END
   end
@@ -169,6 +179,10 @@ dir1/bar.rb
    7|
    8|
    9|bar bar Pikon bar bar bar
+shebang
+   1|#!/usr/bin/env ruby
+   2|
+   3|goo goo goo Aquaria goo goo
 foo.rb
    1|
    2|
@@ -221,12 +235,16 @@ END
     asterize_ansi(%x{rack Caprica -L}).should == t=<<END
 quux.py
 dir1/bar.rb
+shebang
 END
   end
   
   it "--passthru means print all lines whether matching or not" do
     asterize_ansi(%x{rack Caprica --passthru -n}).should == t=<<END
 quux quux quux quux Virgon quux quux
+#!/usr/bin/env ruby
+
+goo goo goo Aquaria goo goo
 
 
 *foo.rb*
@@ -292,6 +310,7 @@ END
 dir1/bar.rb
 foo.rb
 quux.py
+shebang
 END
   end
   
@@ -393,6 +412,7 @@ describe "Rack", "with combinations of options" do
     strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
 quux.py:1
 dir1/bar.rb:7
+shebang:3
 foo.rb:11
 END
   end

@@ -354,21 +354,6 @@ END
       end
     end
     
-    unless opt[:all_files]
-      files = files.select do |fn|
-        types.include? File.extname(fn)
-      end
-      files = files.select do |fn|
-        fn[-1..-1] != "~" and
-          fn[-1..-1] != "#"
-      end
-    end
-    
-    # reject version control dirs
-    files.reject! do |fn|
-      VC_DIRS.any? {|vc| fn.include? vc}
-    end
-    
     # select based on file type
     if not opt[:includes].empty?
       files = files.select do |fn|
@@ -382,6 +367,23 @@ END
       end
     end
 
+    # strip out based on extension
+    unless opt[:all_files]
+      files = files.select do |fn|
+        types.include? File.extname(fn) or
+          shebang_matches(fn)
+      end
+      files = files.select do |fn|
+        fn[-1..-1] != "~" and
+          fn[-1..-1] != "#"
+      end
+    end
+    
+    # reject version control dirs
+    files.reject! do |fn|
+      VC_DIRS.any? {|vc| fn.include? vc}
+    end
+    
     # filter based on -g=REGEX
     if opt[:filename_regex]
       if $use_onig
@@ -400,6 +402,23 @@ END
     end
     
     files + io_files
+  end
+  
+  def self.shebang_matches(fn)
+    File.open(fn) do |f|
+      line = f.readline
+      if line =~ /^#!/
+          if line =~ /\b(ruby|p(?:erl|hp|ython))\b/ or
+              line =~ /\b(?:ba|c|k|z)?sh\b/
+            return true
+          end
+      else
+        if line =~ /\Q<?xml /
+          return true
+        end
+      end
+      return false
+    end
   end
     
   def self.search2(str, files)
