@@ -436,7 +436,11 @@ END
   
   def self.shebang_matches(fn)
     File.open(fn) do |f|
-      line = f.readline
+      begin
+        line = f.readline
+      rescue
+        line = ""
+      end
       if line =~ /^#!/
           if line =~ /\b(ruby|perl|php|python)\b/
             return "."+FILE_TYPES[$1.intern].first

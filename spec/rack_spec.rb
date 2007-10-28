@@ -411,10 +411,6 @@ END
   end
 end
 
-
-
-
-
 describe "Rack", "with combinations of options" do
   before(:all) do
     ENV['RACK_TEST'] = "true"
