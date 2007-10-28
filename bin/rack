@@ -168,7 +168,7 @@ END
       case option
       when '--help'
         if arg == ""
-          puts DATA.read.split("__________\n")[0]
+          puts usage
         else
           puts DATA.read.split("__________\n")[1]
         end
@@ -283,6 +283,11 @@ END
       MATCH_COLOUR.replace ""
     end
 
+    if ARGV.empty? and opt[:print_filelist] == false
+      puts usage
+      exit
+    end
+    
     print_files(files)      if opt[:print_filelist]
     search2(ARGV[0], files) if opt[:do_search]
   end
@@ -291,6 +296,10 @@ END
     files.each do |fn|
       puts fn
     end
+  end
+  
+  def self.usage
+    DATA.read.split("__________\n")[0]
   end
   
   def self.get_all_files(files=[], dir="./")
@@ -640,7 +649,7 @@ File finding:
 
 File inclusion/exclusion:
   -n                    No descending into subdirectories
-#  -g REGEX              Only search in file matching REGEX.
+  -g REGEX              Only search in file matching REGEX.
   -a, --all             All files, regardless of extension (but still skips
                         blib, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
