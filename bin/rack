@@ -279,6 +279,12 @@ END
         opt[:match_whole_lines] = true
       end
     end
+    
+    if ARGV.empty? and opt[:print_filelist] == false
+      puts usage
+      exit
+    end
+    
     files = get_files
     
     unless opt[:colour]
@@ -287,11 +293,6 @@ END
       MATCH_COLOUR.replace ""
     end
 
-    if ARGV.empty? and opt[:print_filelist] == false
-      puts usage
-      exit
-    end
-    
     print_files(files)      if opt[:print_filelist]
     search2(ARGV[0], files) if opt[:do_search]
   end
