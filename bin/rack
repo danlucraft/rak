@@ -72,7 +72,6 @@ END
   end
   
   def self.search
-
     @opt = {}
 
     # file types
@@ -93,7 +92,7 @@ END
     end
     
     opts = GetoptLong.new(
-      [ '--help', GetoptLong::NO_ARGUMENT ],
+      [ '--help', GetoptLong::OPTIONAL_ARGUMENT ],
       [ '--max-count', '-m', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--files', '-f', GetoptLong::NO_ARGUMENT ],
       [ '--output', GetoptLong::REQUIRED_ARGUMENT ],
@@ -159,7 +158,11 @@ END
     opts.each do |option, arg|
       case option
       when '--help'
-        puts DATA.read
+        if arg == ""
+          puts DATA.read.split("__________\n")[0]
+        else
+          puts DATA.read.split("__________\n")[1]
+        end
         exit
       when '--max-count'
         opt[:max_count] = arg.to_i
@@ -270,7 +273,7 @@ END
       CLEAR_COLOURS.replace ""
       MATCH_COLOUR.replace ""
     end
-    
+
     print_files(files)      if opt[:print_filelist]
     search2(ARGV[0], files) if opt[:do_search]
   end
@@ -310,9 +313,13 @@ END
     types_files = FILE_TYPES.invert
     types = types_files.keys.flatten.map{|s| "."+s}
     files_and_dirs = ARGV[1..-1]
-    
+    io_files = []
     if !files_and_dirs or files_and_dirs.empty?
       files = get_all_files
+      if STDIN.stat.mode == 4480
+        io_files << STDIN
+        opt[:print_filename] = false
+      end
     else
       files = []
       files_and_dirs.each do |thing|
@@ -374,7 +381,7 @@ END
       files.sort!
     end
     
-    files
+    files + io_files
   end
     
   def self.search2(str, files)
@@ -412,107 +419,111 @@ END
       before_context = []
       before_context_size = opt[:before_context]
     end
-    File.open(fn) do |f|
-      f.each_line do |line|
-        i += 1
-        rest = line
-        while md = re.match(rest)
-          rest = md.post_match
-          if opt[:print_output]
-            matches << eval(opt[:print_output])
-          else
-            matches << md
-          end
-          if opt[:print_match]
-            puts md.to_s
-          end
-          count += 1
+    if fn.is_a? String
+      f = File.open(fn, "r")
+    elsif fn.is_a? IO
+      f = fn
+    end
+    f.each_line do |line|
+      i += 1
+      rest = line
+      while md = re.match(rest)
+        rest = md.post_match
+        if opt[:print_output]
+          matches << eval(opt[:print_output])
+        else
+          matches << md
         end
-        if opt[:invert_match]
-          if opt[:print_filename] 
+        if opt[:print_match]
+          puts md.to_s
+        end
+        count += 1
+      end
+      if opt[:invert_match]
+        if opt[:print_filename] 
+          unless displayed_filename
+            puts FILE_COLOUR + fn + CLEAR_COLOURS
+            displayed_filename = true
+          end
+        end
+        if matches.empty?
+          if opt[:print_highlighted]
+            if opt[:print_line_number]
+              print "#{i.to_s.rjust(4)}|"
+            end
+            puts "#{line}"
+          end
+        end
+        matches.clear
+      else
+        if matches.empty?
+          if opt[:print_entire_line_if_no_match]
+            puts line
+          end
+          if opt[:use_context]
+            if print_num > 0
+              print_num -= 1
+              if opt[:print_highlighted]
+                if opt[:print_line_number]
+                  print "#{i.to_s.rjust(4)}|"
+                end
+                puts "#{line}"
+              end
+            end
+            if opt[:before_context] > 0
+              before_context << [i, line]
+              if before_context.length == before_context_size+1
+                before_context = before_context[1..-1]
+              end
+            end
+          end
+        else
+          print_num = opt[:after_context]
+          if opt[:print_filename]
             unless displayed_filename
               puts FILE_COLOUR + fn + CLEAR_COLOURS
               displayed_filename = true
             end
           end
-          if matches.empty?
-            if opt[:print_highlighted]
+          if opt[:before_context] > 0
+            before_context.each do |before_i, before_line|
               if opt[:print_line_number]
-                print "#{i.to_s.rjust(4)}|"
+                print "#{before_i.to_s.rjust(4)}|"
               end
-              puts "#{line}"
+              puts before_line
             end
+            before_context = []
           end
-          matches.clear
-        else
-          if matches.empty?
-            if opt[:print_entire_line_if_no_match]
-              puts line
-            end
-            if opt[:use_context]
-              if print_num > 0
-                print_num -= 1
-                if opt[:print_highlighted]
-                  if opt[:print_line_number]
-                    print "#{i.to_s.rjust(4)}|"
-                  end
-                  puts "#{line}"
-                end
-              end
-              if opt[:before_context] > 0
-                before_context << [i, line]
-                if before_context.length == before_context_size+1
-                  before_context = before_context[1..-1]
-                end
-              end
-            end
-          else
-            print_num = opt[:after_context]
-            if opt[:print_filename]
-              unless displayed_filename
-                puts FILE_COLOUR + fn + CLEAR_COLOURS
-                displayed_filename = true
-              end
-            end
-            if opt[:before_context] > 0
-              before_context.each do |before_i, before_line|
-                if opt[:print_line_number]
-                  print "#{before_i.to_s.rjust(4)}|"
-                end
-                puts before_line
-              end
-              before_context = []
-            end
-            if opt[:print_output]
-              matches.each {|m| puts m}
-            end
-            if opt[:print_highlighted]
-              if opt[:print_line_number]
-                prefix = "#{i.to_s.rjust(4)}|"
+          if opt[:print_output]
+            matches.each {|m| puts m}
+          end
+          if opt[:print_highlighted]
+            if opt[:print_line_number]
+              prefix = "#{i.to_s.rjust(4)}|"
+            else
+              if opt[:print_file_each_line]
+                prefix = FILE_COLOUR + "#{fn}" + CLEAR_COLOURS + " #{i.to_s.rjust(4)}|"
               else
-                if opt[:print_file_each_line]
-                  prefix = FILE_COLOUR + "#{fn}" + CLEAR_COLOURS + " #{i.to_s.rjust(4)}|"
-                else
-                  prefix = ""
-                end
+                prefix = ""
               end
-              print_highlighted(prefix, line, matches)
             end
+            print_highlighted(prefix, line, matches)
           end
-          if opt[:max_count] 
-            if count >= opt[:max_count]
-              break
-            end
+        end
+        if opt[:max_count] 
+          if count >= opt[:max_count]
+            break
           end
-          matches.clear
         end
-      end
-      if opt[:print_highlighted] and opt[:print_filename]
-        if count > 0
-          puts
-        end
+        matches.clear
       end
     end
+    if opt[:print_highlighted] and opt[:print_filename]
+      if count > 0
+        puts
+      end
+    end
+    f.close if f === File
     if opt[:print_num_matches]
       if opt[:invert_match]
         puts "#{fn}:#{i-count}"
@@ -569,8 +580,7 @@ Usage: rack [OPTION]... PATTERN [FILES]
 
 Search for PATTERN in each source file in the tree from cwd on down.
 If [FILES] is specified, then only those files/directories are checked.
-#rack may also search STDIN, but only if no FILES are specified, or if
-#one of FILES is "-".
+rack will search STDIN only if no FILES are specified.
 
 #Default switches may be specified in ACK_OPTIONS environment variable.
 
@@ -634,4 +644,49 @@ File inclusion/exclusion:
 Miscellaneous:
   --help                This help
   --version             Display version & copyright
+__________
+Usage: ack [OPTION]... PATTERN [FILES]
 
+The following is the list of filetypes supported by ack.  You can
+specify a file type with the --type=TYPE format, or the --TYPE
+format.  For example, both --type=perl and --perl work.
+
+Note that some extensions may appear in multiple types.  For example,
+.pod files are both Perl and Parrot.
+
+    --[no]asm       .s
+#    --[no]binary    Binary files, as defined by Perl's -B op (default: off)
+    --[no]cc        .c .h .xs
+    --[no]cpp       .cpp .m .h
+    --[no]csharp    .cs
+    --[no]css       .css
+    --[no]elisp     .el
+    --[no]erlang    .erl
+    --[no]fortran   .f .f77 .f90 .f95 .f03 .for .ftn .fpp
+    --[no]haskell   .hs .lhs
+    --[no]hh        .h
+    --[no]html      .htm .html .shtml
+    --[no]java      .java .properties
+    --[no]js        .js
+    --[no]jsp       .jsp .jspx .jhtm .jhtml
+    --[no]lisp      .lisp
+#    --[no]make      Makefiles
+    --[no]mason     .mas .mhtml .mpl .mtxt
+    --[no]ocaml     .ml .mli
+    --[no]parrot    .pir .pasm .pmc .ops .pod .pg .tg
+    --[no]perl      .pl .pm .pod .t
+    --[no]php       .php .phpt .php3 .php4 .php5
+    --[no]python    .py
+    --[no]ruby      .rb .rhtml .rjs .rxml
+    --[no]scheme    .scm
+    --[no]shell     .sh .bash .csh .ksh .zsh
+#    --[no]skipped   Files, but not directories, normally skipped by ack (default: off)
+    --[no]sql       .sql .ctl
+    --[no]tcl       .tcl
+    --[no]tex       .tex .cls .sty
+    --[no]text      Text files, as defined by Perl's -T op (default: off)
+    --[no]tt        .tt .tt2 .ttml
+    --[no]vb        .bas .cls .frm .ctl .vb .resx
+    --[no]vim       .vim
+    --[no]xml       .xml .dtd .xslt
+    --[no]yaml      .yaml .yml

@@ -80,6 +80,12 @@ dir1/bar.rb
 
 END
   end
+  
+  it "should search in STDIN by default if no files are specified" do
+    asterize_ansi(%x{cat _darcs/baz.rb | rack Aere}).should == t=<<END
+   2|baz baz baz *Aere*lon baz baz baz
+END
+  end
 end
 
 describe "Rack", "options" do
@@ -395,5 +401,9 @@ END
   
   it "--help prints help information" do
     %x{rack Virg --help}.split("\n")[0].should == "Usage: rack [OPTION]... PATTERN [FILES]"
+  end
+  
+  it "--help types prints type information" do
+    %x{rack --help types}.split("\n")[2].should == "The following is the list of filetypes supported by ack.  You can"
   end
 end
