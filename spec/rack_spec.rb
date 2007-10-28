@@ -10,9 +10,22 @@ def asterize_ansi(str)
   str.gsub /(\033\[\d+m)+/, "*"
 end
 
+ENV['RACK_TEST'] = "true"
+
+def exe(str)
+  sys(str+">tmp")
+  File.read("tmp")
+end
+
 FileUtils.cd("spec/example")
 
 describe "Rack", "with no options" do 
+  before(:all) do
+    ENV['RACK_TEST'] = "true"
+  end
+  after(:all) do
+    ENV['RACK_TEST'] = "false"
+  end
   it "prints all matches from files in the current directory" do
     asterize_ansi(%x{rack Cap.ic}).should == t=<<END
 *foo.rb*
@@ -65,9 +78,24 @@ END
   it "does not follow symlinks" do
     %x{rack Sagitarron}.should == ""
   end
+  
+  it "changes defaults when redirected" do
+    ENV['RACK_TEST'] = "false"
+    asterize_ansi(%x{rack Six | cat}).should == t=<<END
+foo.rb   10|foo foo Six foo foo foo Six foo
+foo.rb   11|foo foo foo foo Six foo foo foo
+END
+    ENV['RACK_TEST'] = "true"
+  end
 end
 
 describe "Rack", "with FILE or STDIN inputs" do
+  before(:all) do
+    ENV['RACK_TEST'] = "true"
+  end
+  after(:all) do
+    ENV['RACK_TEST'] = "false"
+  end
   it "should only search in given files or directories" do
     asterize_ansi(%x{rack Pikon foo.rb}).should == t=<<END
    6|foo foo foo foo foo *Pikon* foo foo
@@ -89,6 +117,12 @@ END
 end
 
 describe "Rack", "options" do
+  before(:all) do
+    ENV['RACK_TEST'] = "true"
+  end
+  after(:all) do
+    ENV['RACK_TEST'] = "false"
+  end
   it "prints only files with --files" do
     %x{rack -f}.should == t=<<END
 quux.py
@@ -366,6 +400,13 @@ end
 
 
 describe "Rack", "with combinations of options" do
+  before(:all) do
+    ENV['RACK_TEST'] = "true"
+  end
+  after(:all) do
+    ENV['RACK_TEST'] = "false"
+  end
+  
   it "should process -c -v " do
     strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
 quux.py:1
@@ -380,6 +421,13 @@ end
 
 
 describe "Rack", "help and errors" do
+  before(:all) do
+    ENV['RACK_TEST'] = "true"
+  end
+  after(:all) do
+    ENV['RACK_TEST'] = "false"
+  end
+  
   it "--version prints version information" do
     strip_ansi(%x{rack --version}).should == t=<<END
 rack 0.0.1
@@ -407,3 +455,4 @@ END
     %x{rack --help types}.split("\n")[2].should == "The following is the list of filetypes supported by ack.  You can"
   end
 end
+

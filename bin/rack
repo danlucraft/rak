@@ -155,6 +155,15 @@ END
     opt[:collect_context] = false
     opt[:filename_regex] = nil
     
+    # if redirected (RACK_TEST allows us to redirect in testing and still 
+    # get the non-redirected defaults).
+    if STDOUT.isatty == false and [nil, "false"].include? ENV['RACK_TEST']
+      opt[:colour] = false
+      opt[:print_file_each_line] = true
+      opt[:print_filename] = false
+      opt[:print_line_number] = false
+    end
+    
     opts.each do |option, arg|
       case option
       when '--help'
@@ -316,7 +325,7 @@ END
     io_files = []
     if !files_and_dirs or files_and_dirs.empty?
       files = get_all_files
-      if STDIN.stat.mode == 4480
+      if STDIN.isatty == false
         io_files << STDIN
         opt[:print_filename] = false
       end
