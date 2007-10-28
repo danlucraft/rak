@@ -57,7 +57,7 @@ END
         :sql         => %w( sql ctl ),
         :tcl         => %w( tcl ),
         :tex         => %w( tex cls sty ),
-   #     :text        => q{Text files, as defined by Perl's -T op (default: off)},
+        :text        => %w( txt text ),
         :tt          => %w( tt tt2 ttml ),
         :vb          => %w( bas cls frm ctl vb resx ),
         :vim         => %w( vim ),
@@ -97,25 +97,25 @@ END
       [ '--files', '-f', GetoptLong::NO_ARGUMENT ],
       [ '--output', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--version', GetoptLong::NO_ARGUMENT ],
-      [ '-c', GetoptLong::NO_ARGUMENT ],
-      [ '-h', GetoptLong::NO_ARGUMENT ],
-      [ '-i', GetoptLong::NO_ARGUMENT ],
-      [ '-v', GetoptLong::NO_ARGUMENT ],
+      [ '-c', '--count', GetoptLong::NO_ARGUMENT ],
+      [ '-h', '--no-filename', GetoptLong::NO_ARGUMENT ],
+      [ '-i', '--ignore-case', GetoptLong::NO_ARGUMENT ],
+      [ '-v', '--invert-match', GetoptLong::NO_ARGUMENT ],
       [ '-n', GetoptLong::NO_ARGUMENT ],
-      [ '-Q', GetoptLong::NO_ARGUMENT ],
+      [ '-Q', '--literal', GetoptLong::NO_ARGUMENT ],
       [ '-o', GetoptLong::NO_ARGUMENT ],
-      [ '-w', GetoptLong::NO_ARGUMENT ],
+      [ '-w', '--word-regexp', GetoptLong::NO_ARGUMENT ],
       [ '--group', GetoptLong::NO_ARGUMENT ],
       [ '--nogroup', GetoptLong::NO_ARGUMENT ],
-      [ '-l', GetoptLong::NO_ARGUMENT ],
-      [ '-L', GetoptLong::NO_ARGUMENT ],
+      [ '-l', '--files-with-matches', GetoptLong::NO_ARGUMENT ],
+      [ '-L', '--files-without-matches', GetoptLong::NO_ARGUMENT ],
       [ '--passthru', GetoptLong::NO_ARGUMENT ],
-      [ '-H', GetoptLong::NO_ARGUMENT ],
+      [ '-H', '--with-filename', GetoptLong::NO_ARGUMENT ],
       [ '--colour', GetoptLong::NO_ARGUMENT ],
       [ '--nocolour', GetoptLong::NO_ARGUMENT ],
       [ '--color', GetoptLong::NO_ARGUMENT ],
       [ '--nocolor', GetoptLong::NO_ARGUMENT ],
-      [ '-a', GetoptLong::NO_ARGUMENT ],
+      [ '-a', '--all', GetoptLong::NO_ARGUMENT ],
       [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--sort-files', GetoptLong::NO_ARGUMENT ],
       [ '--follow', GetoptLong::NO_ARGUMENT ],
@@ -123,7 +123,8 @@ END
       [ '--after-context', '-A', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
       [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ],
-      [ '-g', GetoptLong::REQUIRED_ARGUMENT ]
+      [ '-g', GetoptLong::REQUIRED_ARGUMENT ],
+      [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ]
     )
 
     dir = nil
@@ -142,6 +143,7 @@ END
     opt[:literal] = false
     opt[:print_match] = false
     opt[:match_whole_words] = false
+    opt[:match_whole_lines] = false
     opt[:print_file_each_line] = false
     opt[:print_file_if_match] = false
     opt[:print_file_if_no_match] = false
@@ -273,6 +275,8 @@ END
         opt[:after_context] = val
       when '-g'
         opt[:filename_regex] = arg
+      when '-x'
+        opt[:match_whole_lines] = true
       end
     end
     files = get_files
@@ -354,30 +358,53 @@ END
       end
     end
     
+    # strip out based on extension
+    shebang_files = []
+    unless opt[:all_files]
+      files = files.select do |fn|
+        fn[-1..-1] != "~" and
+          fn[-1..-1] != "#"
+      end
+      files.each do |fn|
+        if ext = shebang_matches(fn)
+          shebang_files << [fn, ext]
+        end
+      end
+      files = files.select do |fn|
+        types.include? File.extname(fn)
+      end
+    end
+    
     # select based on file type
     if not opt[:includes].empty?
       files = files.select do |fn|
         opt[:includes].include?(File.extname(fn))
       end
+      shebang_files2 = []
+      shebang_files.each do |fn, ext|
+        if opt[:includes].include? ext
+          shebang_files2 << [fn, ext]
+        end
+      end
+    else
+      shebang_files2 = shebang_files
     end
     
     if not opt[:excludes].empty?
       files = files.select do |fn|
         not opt[:excludes].include?(File.extname(fn))
       end
-    end
-
-    # strip out based on extension
-    unless opt[:all_files]
-      files = files.select do |fn|
-        types.include? File.extname(fn) or
-          shebang_matches(fn)
+      shebang_files3 = []
+      shebang_files2.each do |fn, ext|
+        unless opt[:excludes].include? ext
+          shebang_files3 << [fn, ext]
+        end
       end
-      files = files.select do |fn|
-        fn[-1..-1] != "~" and
-          fn[-1..-1] != "#"
-      end
+    else
+      shebang_files3 = shebang_files2
     end
+    
+    files += shebang_files3.map {|fn, ext| fn}
     
     # reject version control dirs
     files.reject! do |fn|
@@ -408,13 +435,14 @@ END
     File.open(fn) do |f|
       line = f.readline
       if line =~ /^#!/
-          if line =~ /\b(ruby|p(?:erl|hp|ython))\b/ or
-              line =~ /\b(?:ba|c|k|z)?sh\b/
-            return true
+          if line =~ /\b(ruby|perl|php|python)\b/
+            return "."+FILE_TYPES[$1.intern].first
+          elsif line =~ /\b(bash|csh|ksh|zsh)\b/
+            return ".sh"
           end
       else
         if line =~ /\Q<?xml /
-          return true
+          return ".xml"
         end
       end
       return false
@@ -427,6 +455,9 @@ END
     end
     if opt[:match_whole_words]
       str = "\\b" + str + "\\b"
+    end
+    if opt[:match_whole_lines]
+      str = "^" + str + "$"
     end
     if $use_onig
       if opt[:ignore_case]
@@ -627,6 +658,7 @@ Searching:
   -i, --ignore-case     Ignore case distinctions
   -v, --invert-match    Invert match: select non-matching lines
   -w, --word-regexp     Force PATTERN to match only whole words
+  -x, --line-regexp     Force PATTERN to match only whole lines
   -Q, --literal         Quote all metacharacters; expr is literal
 
 Search output:
@@ -721,7 +753,7 @@ Note that some extensions may appear in multiple types.  For example,
     --[no]sql       .sql .ctl
     --[no]tcl       .tcl
     --[no]tex       .tex .cls .sty
-    --[no]text      Text files, as defined by Perl's -T op (default: off)
+    --[no]text      .txt .text
     --[no]tt        .tt .tt2 .ttml
     --[no]vb        .bas .cls .frm .ctl .vb .resx
     --[no]vim       .vim

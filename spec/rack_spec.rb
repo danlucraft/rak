@@ -117,8 +117,8 @@ describe "Rack", "options" do
     %x{rack -f}.should == t=<<END
 quux.py
 dir1/bar.rb
-shebang
 foo.rb
+shebang
 END
   end
   
@@ -142,8 +142,8 @@ END
     strip_ansi(%x{rack Pik -c}).should == t=<<END
 quux.py:0
 dir1/bar.rb:2
-shebang:0
 foo.rb:2
+shebang:0
 END
   end
   
@@ -179,10 +179,6 @@ dir1/bar.rb
    7|
    8|
    9|bar bar Pikon bar bar bar
-shebang
-   1|#!/usr/bin/env ruby
-   2|
-   3|goo goo goo Aquaria goo goo
 foo.rb
    1|
    2|
@@ -191,6 +187,10 @@ foo.rb
    9|
   12|
 
+shebang
+   1|#!/usr/bin/env ruby
+   2|
+   3|goo goo goo Aquaria goo goo
 END
   end
   
@@ -242,9 +242,6 @@ END
   it "--passthru means print all lines whether matching or not" do
     asterize_ansi(%x{rack Caprica --passthru -n}).should == t=<<END
 quux quux quux quux Virgon quux quux
-#!/usr/bin/env ruby
-
-goo goo goo Aquaria goo goo
 
 
 *foo.rb*
@@ -260,6 +257,9 @@ foo foo foo foo Six foo foo foo
 
 foo foo foo Gemenon foo foo foo
 
+#!/usr/bin/env ruby
+
+goo goo goo Aquaria goo goo
 END
   end
   
@@ -394,6 +394,15 @@ END
 END
   end
   
+  it "-x means match only whole lines" do
+    asterize_ansi(%x{rack Cap -x}).should == ""
+    asterize_ansi(%x{rack "(foo )+Cap\\w+( foo)+" -x}).should == t=<<END
+*foo.rb*
+   3|*foo foo foo Caprica foo foo foo*
+   4|*foo Capsicum foo foo foo foo foo*
+
+END
+  end
 end
 
 
@@ -412,8 +421,8 @@ describe "Rack", "with combinations of options" do
     strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
 quux.py:1
 dir1/bar.rb:7
-shebang:3
 foo.rb:11
+shebang:3
 END
   end
 end
