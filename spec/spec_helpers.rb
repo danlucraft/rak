@@ -1,10 +1,10 @@
 
 def strip_ansi(str)
-  str.gsub /\033\[\d+m/, ""
+  str.gsub /\033\[(\d;)?\d+m/, ""
 end
 
 def asterize_ansi(str)
-  str.gsub /(\033\[\d+m)+/, "*"
+  str.gsub /(\033\[(\d;)?\d+m)+/, "*"
 end
 
 def exe(str)
