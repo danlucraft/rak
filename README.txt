@@ -1,6 +1,6 @@
 rak
     by Daniel Lucraft
-    http://www.daniellucraft.com/blog/projects
+    http://rubyforge.org/projects/rak
 
 == DESCRIPTION:
   

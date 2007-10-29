@@ -1,7 +1,6 @@
 
 require 'rubygems'
 require 'hoe'
-require './lib/rack.rb'
 
 Hoe.new('rack', "1.0.0") do |p|
   p.rubyforge_name = 'rak'
