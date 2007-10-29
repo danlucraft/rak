@@ -555,22 +555,13 @@ END
     code << %{          puts "\#{line}"                                          }
                       end
     code << %{      end                                                               }
-    code << %{      matches.clear                                                        }
+    code << %{      matches.clear                                                   }
                   else
     code << %{      if matches.empty?                                                 }
                       if opt[:print_entire_line_if_no_match]
     code << %{          puts line                                                 }
                       end
                       if opt[:use_context]
-    code << %{          if print_num > 0                                                 }
-    code << %{            print_num -= 1                                                 }
-                          if opt[:print_highlighted]
-                            if opt[:print_line_number]
-   code << %{                 print "\#{i.to_s.rjust(4)}|"                            }
-                            end
-   code << %{               puts "\#{line}"                                          }
-   code << %{             end                                                        }
-                        end
                         if opt[:before_context] > 0 
    code << %{             if print_num == 0                                                 }
    code << %{               before_context << [i, line]                                   }
@@ -578,6 +569,15 @@ END
    code << %{                 before_context = before_context[1..-1]                            }
    code << %{               end                                                               }
    code << %{             end                                                               }
+                        end
+    code << %{          if print_num > 0                                                 }
+    code << %{            print_num -= 1                                                 }
+                          if opt[:print_highlighted]
+                            if opt[:print_line_number]
+    code << %{                print "\#{i.to_s.rjust(4)}|"                            }
+                            end
+    code << %{              puts "\#{line}"                                          }
+   code << %{             end                                                        }
                         end
                       end
    code << %{       else                                                                      }
