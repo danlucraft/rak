@@ -502,7 +502,8 @@ END
   
   # this is tricky thing. Ignore the "code <<" to see the
   # logic. Because the options never change we conditionally compile
-  # the match method based on them.
+  # the match method based on them. This is gives a 2x speedup over
+  # the alternative.
   def self.compile_match_file
     code = ""
     def code.<<(str)
@@ -526,7 +527,7 @@ END
     code << %{  end                             }
     
     code << %{  f.each_line do |line|                                          }
-    code << %{    i += 1                                                      }
+    code << %{    i += 1                                                         }
     code << %{    rest = line                                                      }
     code << %{    while md = re.match(rest)                                   }
     code << %{      rest = md.post_match                                          }
