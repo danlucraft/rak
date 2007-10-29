@@ -91,41 +91,41 @@ END
       end
     end
     
-    opts = GetoptLong.new(
-      [ '--help', GetoptLong::OPTIONAL_ARGUMENT ],
-      [ '--max-count', '-m', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--files', '-f', GetoptLong::NO_ARGUMENT ],
-      [ '--output', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--version', GetoptLong::NO_ARGUMENT ],
-      [ '-c', '--count', GetoptLong::NO_ARGUMENT ],
-      [ '-h', '--no-filename', GetoptLong::NO_ARGUMENT ],
-      [ '-i', '--ignore-case', GetoptLong::NO_ARGUMENT ],
-      [ '-v', '--invert-match', GetoptLong::NO_ARGUMENT ],
-      [ '-n', GetoptLong::NO_ARGUMENT ],
-      [ '-Q', '--literal', GetoptLong::NO_ARGUMENT ],
-      [ '-o', GetoptLong::NO_ARGUMENT ],
-      [ '-w', '--word-regexp', GetoptLong::NO_ARGUMENT ],
-      [ '--group', GetoptLong::NO_ARGUMENT ],
-      [ '--nogroup', GetoptLong::NO_ARGUMENT ],
-      [ '-l', '--files-with-matches', GetoptLong::NO_ARGUMENT ],
-      [ '-L', '--files-without-matches', GetoptLong::NO_ARGUMENT ],
-      [ '--passthru', GetoptLong::NO_ARGUMENT ],
-      [ '-H', '--with-filename', GetoptLong::NO_ARGUMENT ],
-      [ '--colour', GetoptLong::NO_ARGUMENT ],
-      [ '--nocolour', GetoptLong::NO_ARGUMENT ],
-      [ '--color', GetoptLong::NO_ARGUMENT ],
-      [ '--nocolor', GetoptLong::NO_ARGUMENT ],
-      [ '-a', '--all', GetoptLong::NO_ARGUMENT ],
-      [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--sort-files', GetoptLong::NO_ARGUMENT ],
-      [ '--follow', GetoptLong::NO_ARGUMENT ],
-      [ '--nofollow', GetoptLong::NO_ARGUMENT ],
-      [ '--after-context', '-A', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ],
-      [ '-g', GetoptLong::REQUIRED_ARGUMENT ],
-      [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ]
-    )
+      opts = GetoptLong.new(
+                            [ '--help', GetoptLong::OPTIONAL_ARGUMENT ],
+                            [ '--max-count', '-m', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '--files', '-f', GetoptLong::NO_ARGUMENT ],
+                            [ '--output', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '--version', GetoptLong::NO_ARGUMENT ],
+                            [ '-c', '--count', GetoptLong::NO_ARGUMENT ],
+                            [ '-h', '--no-filename', GetoptLong::NO_ARGUMENT ],
+                            [ '-i', '--ignore-case', GetoptLong::NO_ARGUMENT ],
+                            [ '-v', '--invert-match', GetoptLong::NO_ARGUMENT ],
+                            [ '-n', GetoptLong::NO_ARGUMENT ],
+                            [ '-Q', '--literal', GetoptLong::NO_ARGUMENT ],
+                            [ '-o', GetoptLong::NO_ARGUMENT ],
+                            [ '-w', '--word-regexp', GetoptLong::NO_ARGUMENT ],
+                            [ '--group', GetoptLong::NO_ARGUMENT ],
+                            [ '--nogroup', GetoptLong::NO_ARGUMENT ],
+                            [ '-l', '--files-with-matches', GetoptLong::NO_ARGUMENT ],
+                            [ '-L', '--files-without-matches', GetoptLong::NO_ARGUMENT ],
+                            [ '--passthru', GetoptLong::NO_ARGUMENT ],
+                            [ '-H', '--with-filename', GetoptLong::NO_ARGUMENT ],
+                            [ '--colour', GetoptLong::NO_ARGUMENT ],
+                            [ '--nocolour', GetoptLong::NO_ARGUMENT ],
+                            [ '--color', GetoptLong::NO_ARGUMENT ],
+                            [ '--nocolor', GetoptLong::NO_ARGUMENT ],
+                            [ '-a', '--all', GetoptLong::NO_ARGUMENT ],
+                            [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '--sort-files', GetoptLong::NO_ARGUMENT ],
+                            [ '--follow', GetoptLong::NO_ARGUMENT ],
+                            [ '--nofollow', GetoptLong::NO_ARGUMENT ],
+                            [ '--after-context', '-A', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ],
+                            [ '-g', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ]
+                            )
 
     dir = nil
     
@@ -166,120 +166,127 @@ END
       opt[:print_line_number] = false
     end
     
-    opts.each do |option, arg|
-      case option
-      when '--help'
-        if arg == ""
-          puts usage
-        else
-          puts DATA.read.split("__________\n")[1]
+    begin
+      opts.each do |option, arg|
+        case option
+        when '--help'
+          if arg == ""
+            puts usage
+          else
+            puts DATA.read.split("__________\n")[1]
+          end
+          exit
+        when '--max-count'
+          opt[:max_count] = arg.to_i
+        when '--files'
+          opt[:do_search] = false
+          opt[:print_filelist] = true
+        when '--output'
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+          opt[:print_output] = arg
+          opt[:print_highlighted] = false
+        when '--version'
+          puts VERSION_INFO
+          exit
+        when '-c'
+          opt[:print_num_matches] = true
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+          opt[:print_highlighted] = false
+        when '-h'
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+        when '-i'
+          opt[:ignore_case] = true
+        when '-v'
+          opt[:invert_match] = true
+        when '-n'
+          opt[:descend] = false
+        when '-Q'
+          opt[:literal] = true
+        when '-o'
+          opt[:print_match] = true
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+          opt[:print_highlighted] = false
+        when '-w'
+          opt[:match_whole_words] = true
+        when '--group'
+          opt[:print_filename] = true
+          opt[:print_file_each_line] = false
+        when '--nogroup'
+          opt[:print_file_each_line] = true
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+        when '-l'
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+          opt[:print_highlighted] = false
+          opt[:print_file_if_match] = true
+        when '-L'
+          opt[:print_filename] = false
+          opt[:print_line_number] = false
+          opt[:print_highlighted] = false
+          opt[:print_file_if_no_match] = true
+        when '--passthru'
+          opt[:print_entire_line_if_no_match] = true
+        when '-H'
+          opt[:print_filename] = true
+          opt[:print_line_number] = true
+        when '--nocolour', '--nocolor'
+          opt[:colour] = false
+        when '--colour', '--color'
+          opt[:colour] = true
+        when '-a'
+          opt[:all_files] = true
+        when '--type'
+          if arg[0..1] == "no"
+            type = arg[2..-1]
+            arr = opt[:excludes]
+          else
+            type = arg
+            arr = opt[:includes]
+          end
+          exts = FILE_TYPES[type.intern]
+          unknown_type(type) unless exts
+          exts.each do |ext|
+            arr << '.' + ext
+          end
+        when '--sort-files'
+          opt[:sort_files] = true
+        when '--follow'
+          opt[:follow_symlinks] = true
+        when '--nofollow'
+          opt[:follow_symlinks] = false
+        when '--after-context'
+          opt[:use_context] = true
+          opt[:after_context] = arg.to_i
+        when '--before-context'
+          opt[:use_context] = true
+          opt[:before_context] = arg.to_i
+        when '--context'
+          opt[:use_context] = true
+          if arg == ""
+            val = 2
+          else
+            val = arg.to_i
+          end
+          opt[:before_context] = val
+          opt[:after_context] = val
+        when '-g'
+          opt[:filename_regex] = arg
+        when '-x'
+          opt[:match_whole_lines] = true
         end
-        exit
-      when '--max-count'
-        opt[:max_count] = arg.to_i
-      when '--files'
-        opt[:do_search] = false
-        opt[:print_filelist] = true
-      when '--output'
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-        opt[:print_output] = arg
-        opt[:print_highlighted] = false
-      when '--version'
-        puts VERSION_INFO
-        exit
-      when '-c'
-        opt[:print_num_matches] = true
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-        opt[:print_highlighted] = false
-      when '-h'
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-      when '-i'
-        opt[:ignore_case] = true
-      when '-v'
-        opt[:invert_match] = true
-      when '-n'
-        opt[:descend] = false
-      when '-Q'
-        opt[:literal] = true
-      when '-o'
-        opt[:print_match] = true
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-        opt[:print_highlighted] = false
-      when '-w'
-        opt[:match_whole_words] = true
-      when '--group'
-        opt[:print_filename] = true
-        opt[:print_file_each_line] = false
-      when '--nogroup'
-        opt[:print_file_each_line] = true
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-      when '-l'
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-        opt[:print_highlighted] = false
-        opt[:print_file_if_match] = true
-      when '-L'
-        opt[:print_filename] = false
-        opt[:print_line_number] = false
-        opt[:print_highlighted] = false
-        opt[:print_file_if_no_match] = true
-      when '--passthru'
-        opt[:print_entire_line_if_no_match] = true
-      when '-H'
-        opt[:print_filename] = true
-        opt[:print_line_number] = true
-      when '--nocolour', '--nocolor'
-        opt[:colour] = false
-      when '--colour', '--color'
-        opt[:colour] = true
-      when '-a'
-        opt[:all_files] = true
-      when '--type'
-        if arg[0..1] == "no"
-          type = arg[2..-1]
-          arr = opt[:excludes]
-        else
-          type = arg
-          arr = opt[:includes]
-        end
-        exts = FILE_TYPES[type.intern]
-        unknown_type(type) unless exts
-        exts.each do |ext|
-          arr << '.' + ext
-        end
-      when '--sort-files'
-        opt[:sort_files] = true
-      when '--follow'
-        opt[:follow_symlinks] = true
-      when '--nofollow'
-        opt[:follow_symlinks] = false
-      when '--after-context'
-        opt[:use_context] = true
-        opt[:after_context] = arg.to_i
-      when '--before-context'
-        opt[:use_context] = true
-        opt[:before_context] = arg.to_i
-      when '--context'
-        opt[:use_context] = true
-        if arg == ""
-          val = 2
-        else
-          val = arg.to_i
-        end
-        opt[:before_context] = val
-        opt[:after_context] = val
-      when '-g'
-        opt[:filename_regex] = arg
-      when '-x'
-        opt[:match_whole_lines] = true
       end
+    rescue GetoptLong::InvalidOption => ex
+      puts "rack: see rack --help for usage."
+      exit
+    rescue SystemExit
+      exit
     end
-    
+
     if ARGV.empty? and opt[:print_filelist] == false
       puts usage
       exit

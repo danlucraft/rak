@@ -34,10 +34,17 @@ END
   end
   
   it "--help types prints type information" do
-    %x{rack --help types}.split("\n")[2].should == "The following is the list of filetypes supported by ack.  You can"
+    %x{rack --help types}.split("\n")[2].should == "The following is the list of filetypes supported by rack.  You can"
   end
   
   it "no options or patterns prints the usage info" do
     %x{rack}.split("\n")[0].should == "Usage: rack [OPTION]... PATTERN [FILES]"
+  end
+
+  it "prints a nice message for unknown options" do
+    t=<<END
+rack: see rack --help for usage.
+END
+    %x{rack foo --asfdasfd}.include?(t).should be_true
   end
 end
