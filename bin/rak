@@ -525,126 +525,126 @@ END
     code << %{    f = fn                        }
     code << %{  end                             }
     
-    code << %{  f.each_line do |line|                            }
-    code << %{    i += 1                            }
-    code << %{    rest = line                            }
-    code << %{    while md = re.match(rest)                            }
-    code << %{      rest = md.post_match                            }
+    code << %{  f.each_line do |line|                                          }
+    code << %{    i += 1                                                      }
+    code << %{    rest = line                                                      }
+    code << %{    while md = re.match(rest)                                   }
+    code << %{      rest = md.post_match                                          }
                     if opt[:print_output]
     code << %{        matches << eval(opt[:print_output])                            }
                     else
-    code << %{        matches << md                            }
+    code << %{        matches << md                                               }
                     end
                     if opt[:print_match]
-    code << %{        puts md.to_s                            }
+    code << %{        puts md.to_s                                               }
                     end
-    code << %{      count += 1                            }
-    code << %{    end                            }
+    code << %{      count += 1                                                      }
+    code << %{    end                                                             }
                   if opt[:invert_match]
                     if opt[:print_filename] 
-    code << %{        unless displayed_filename                            }
+    code << %{        unless displayed_filename                                   }
     code << %{          puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
-    code << %{          displayed_filename = true                            }
-    code << %{        end                            }
+    code << %{          displayed_filename = true                                   }
+    code << %{        end                                                               }
                     end
-    code << %{      if matches.empty?                            }
+    code << %{      if matches.empty?                                                 }
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
     code << %{            print "\#{i.to_s.rjust(4)}|"                            }
                         end
-    code << %{          puts "\#{line}"                            }
+    code << %{          puts "\#{line}"                                          }
                       end
-    code << %{      end                            }
-    code << %{      matches.clear                            }
+    code << %{      end                                                               }
+    code << %{      matches.clear                                                        }
                   else
-    code << %{      if matches.empty?                            }
+    code << %{      if matches.empty?                                                 }
                       if opt[:print_entire_line_if_no_match]
-    code << %{          puts line                            }
+    code << %{          puts line                                                 }
                       end
                       if opt[:use_context]
-    code << %{          if print_num > 0                            }
-    code << %{            print_num -= 1                            }
+    code << %{          if print_num > 0                                                 }
+    code << %{            print_num -= 1                                                 }
                           if opt[:print_highlighted]
                             if opt[:print_line_number]
    code << %{                 print "\#{i.to_s.rjust(4)}|"                            }
                             end
-   code << %{               puts "\#{line}"                            }
-   code << %{             end                            }
+   code << %{               puts "\#{line}"                                          }
+   code << %{             end                                                        }
                         end
                         if opt[:before_context] > 0 
-   code << %{             if print_num == 0                            }
-   code << %{               before_context << [i, line]                            }
+   code << %{             if print_num == 0                                                 }
+   code << %{               before_context << [i, line]                                   }
    code << %{               if before_context.length == before_context_size+1                            }
    code << %{                 before_context = before_context[1..-1]                            }
-   code << %{               end                            }
-   code << %{             end                            }
+   code << %{               end                                                               }
+   code << %{             end                                                               }
                         end
                       end
-   code << %{       else                            }
-   code << %{         print_num = opt[:after_context]                            }
+   code << %{       else                                                                      }
+   code << %{         print_num = opt[:after_context]                                          }
                       if opt[:print_filename]
-   code << %{           unless displayed_filename                            }
+   code << %{           unless displayed_filename                                          }
    code << %{             puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
-   code << %{             displayed_filename = true                            }
-   code << %{           end                            }
+   code << %{             displayed_filename = true                                          }
+   code << %{           end                                                               }
                       end
                       if opt[:before_context] > 0
    code << %{           before_context.each do |before_i, before_line|                            }
                           if opt[:print_line_number]
    code << %{               print "\#{before_i.to_s.rjust(4)}|"                            }
                           end
-   code << %{             puts before_line                            }
-   code << %{           end                            }
-   code << %{           before_context = []                            }
-                      end
+   code << %{             puts before_line                                                 }
+   code << %{           end                                                               }
+   code << %{           before_context = []                                                 }
+                      end       
                       if opt[:print_output]
-   code << %{           matches.each {|m| puts m}                            }
+   code << %{           matches.each {|m| puts m}                                          }
                       end
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
-   code << %{             prefix = "\#{i.to_s.rjust(4)}|"                            }
+   code << %{             prefix = "\#{i.to_s.rjust(4)}|"                                   }
                         else
                           if opt[:print_file_each_line]
    code << %{               fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + " " : "")                            }
    code << %{               prefix = fn_str + "\#{i.to_s.rjust(4)}|"                            }
                           else
-   code << %{               prefix = ""                            }
+   code << %{               prefix = ""                                                        }
                           end
                         end
    code << %{           print_highlighted(prefix, line, matches)                            }
                       end
-   code << %{       end                            }
+   code << %{       end                                                                      }
                     if opt[:max_count] 
-   code << %{         if count >= opt[:max_count]                            }
-   code << %{           break                            }
-   code << %{         end                            }
+   code << %{         if count >= opt[:max_count]                                          }
+   code << %{           break                                                               }
+   code << %{         end                                                               }
                     end
-   code << %{       matches.clear                            }
+   code << %{       matches.clear                                                        }
                   end
-   code << %{   end                            }
+   code << %{   end                                                                      }
                 if opt[:print_highlighted] and opt[:print_filename]
-   code << %{     if count > 0                            }
-   code << %{       puts                            }
-   code << %{     end                            }
+   code << %{     if count > 0                                                               }
+   code << %{       puts                                                                      }
+   code << %{     end                                                                      }
                 end
-   code << %{   f.close if f === File                            }
+   code << %{   f.close if f === File                                                        }
                 if opt[:print_num_matches]
                   if opt[:invert_match]
-   code << %{       puts "\#{fn}:\#{i-count}"                            }
-                  else
-   code << %{       puts "\#{fn}:\#{count}"                            }
+   code << %{       puts "\#{fn}:\#{i-count}"                                                 }
+                  else       
+   code << %{       puts "\#{fn}:\#{count}"                                                 }
                   end
                 end
                 if opt[:print_file_if_match]
-   code << %{     if count > 0                            }
-   code << %{       puts fn                            }
-   code << %{     end                            }
+   code << %{     if count > 0                                                               }
+   code << %{       puts fn                                                               }
+   code << %{     end                                                                      }
                 end
     
                 if opt[:print_file_if_no_match]
-   code << %{     if count == 0                            }
-   code << %{       puts fn                            }
-   code << %{     end                            }
+   code << %{     if count == 0                                                               }
+   code << %{       puts fn                                                                      }
+   code << %{     end                                                                      }
                 end 
     code << %{end }
 #    if ENV['RACK_TEST'] == "true"
