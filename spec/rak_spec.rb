@@ -79,7 +79,13 @@ END
 END
   end
   
-  it "recognizes Makefiles and Rakefiles"
+  it "recognizes Makefiles and Rakefiles" do
+    asterize_ansi(%x{rak Canceron}).should == t=<<END
+*Rakefile*
+   1|rakefile rakefile *Canceron* rakefile
+
+END
+  end
 end
 
 describe "Rak", "with FILE or STDIN inputs" do
@@ -124,6 +130,7 @@ describe "Rak", "options" do
   end
   it "prints only files with --files" do
     t=<<END
+Rakefile
 quux.py
 dir1/bar.rb
 foo.rb
@@ -154,6 +161,7 @@ quux.py:0
 dir1/bar.rb:2
 foo.rb:2
 shebang:0
+Rakefile:0
 END
     sort_lines(strip_ansi(%x{rak Pik -c})).should == sort_lines(t)
   end
@@ -208,12 +216,17 @@ shebang
    2|
    3|goo goo goo Aquaria goo goo
 END
+    t4=<<END
+Rakefile
+   1|rakefile rakefile Canceron rakefile
+END
     r = strip_ansi(%x{rak foo -v})
     r.include?(t1).should be_true
     r.include?(t12).should be_true
     r.include?(t2).should be_true
     r.include?(t3).should be_true
-    r.split("\n").length.should == 24
+    r.include?(t4).should be_true
+    r.split("\n").length.should == 26
   end
   
   it "doesn't descend into subdirs with -n" do
@@ -258,6 +271,7 @@ END
 quux.py
 dir1/bar.rb
 shebang
+Rakefile
 END
     sort_lines(asterize_ansi(%x{rak Caprica -L})).should == sort_lines(t)
   end
@@ -340,6 +354,7 @@ END
 dir1/bar.rb
 foo.rb
 quux.py
+Rakefile
 shebang
 END
   end
@@ -462,6 +477,7 @@ quux.py:1
 dir1/bar.rb:7
 foo.rb:11
 shebang:3
+Rakefile:1
 END
     sort_lines(strip_ansi(%x{rak Pikon -c -v})).should == sort_lines(t1)
   end
