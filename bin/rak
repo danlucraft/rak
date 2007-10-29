@@ -385,7 +385,7 @@ END
     # select based on file type
     if not opt[:includes].empty?
       files = files.select do |fn|
-        opt[:includes].include?(File.extname(fn))
+        opt[:includes].any? {|ext| fn.include? ext}
       end
       shebang_files2 = []
       shebang_files.each do |fn, ext|
@@ -399,11 +399,11 @@ END
     
     if not opt[:excludes].empty?
       files = files.select do |fn|
-        not opt[:excludes].include?(File.extname(fn))
+        not opt[:excludes].any? {|ext| fn.include? ext}
       end
       shebang_files3 = []
       shebang_files2.each do |fn, ext|
-        unless opt[:excludes].include? ext
+        unless opt[:excludes].any? {|ext| fn.include? ext}
           shebang_files3 << [fn, ext]
         end
       end
