@@ -13,3 +13,7 @@ def exe(str)
 end
 
 FileUtils.cd("spec/example")
+
+def sort_lines(str)
+  str.split("\n").sort.join("\n")
+end

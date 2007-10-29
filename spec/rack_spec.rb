@@ -120,12 +120,13 @@ describe "Rack", "options" do
     ENV['RACK_TEST'] = "false"
   end
   it "prints only files with --files" do
-    %x{rack -f}.should == t=<<END
+    t=<<END
 quux.py
 dir1/bar.rb
 foo.rb
 shebang
 END
+    sort_lines(%x{rack -f}).should == sort_lines(t)
   end
   
   it "prints a maximum number of matches if --max-count=x is specified" do
@@ -145,12 +146,13 @@ END
   
   
   it "-c prints only the number of matches found per file" do
-    strip_ansi(%x{rack Pik -c}).should == t=<<END
+    t=<<END
 quux.py:0
 dir1/bar.rb:2
 foo.rb:2
 shebang:0
 END
+    sort_lines(strip_ansi(%x{rack Pik -c})).should == sort_lines(t)
   end
   
   it "-h suppresses filename and line number printing" do
@@ -172,9 +174,11 @@ END
   end
   
   it "inverts the match with -v" do
-    strip_ansi(%x{rack foo -v}).should == t=<<END
+    t1=<<END
 quux.py
    1|quux quux quux quux Virgon quux quux
+END
+    t12=<<END
 dir1/bar.rb
    1|
    2|bar bar bar bar Pikon bar
@@ -185,6 +189,8 @@ dir1/bar.rb
    7|
    8|
    9|bar bar Pikon bar bar bar
+END
+    t2=<<END
 foo.rb
    1|
    2|
@@ -192,12 +198,19 @@ foo.rb
    7|
    9|
   12|
-
+END
+    t3=<<END
 shebang
    1|#!/usr/bin/env ruby
    2|
    3|goo goo goo Aquaria goo goo
 END
+    r = strip_ansi(%x{rack foo -v})
+    r.include?(t1).should be_true
+    r.include?(t12).should be_true
+    r.include?(t2).should be_true
+    r.include?(t3).should be_true
+    r.split("\n").length.should == 24
   end
   
   it "doesn't descend into subdirs with -n" do
@@ -238,18 +251,20 @@ END
   end
   
   it "-L means only print filenames without matches" do
-    asterize_ansi(%x{rack Caprica -L}).should == t=<<END
+      t=<<END
 quux.py
 dir1/bar.rb
 shebang
 END
+    sort_lines(asterize_ansi(%x{rack Caprica -L})).should == sort_lines(t)
   end
   
   it "--passthru means print all lines whether matching or not" do
-    asterize_ansi(%x{rack Caprica --passthru -n}).should == t=<<END
+     t1=<<END
 quux quux quux quux Virgon quux quux
+END
 
-
+    t2=<<END
 *foo.rb*
    3|foo foo foo *Caprica* foo foo foo
 foo Capsicum foo foo foo foo foo
@@ -262,11 +277,17 @@ foo foo Six foo foo foo Six foo
 foo foo foo foo Six foo foo foo
 
 foo foo foo Gemenon foo foo foo
-
+END
+    t3=<<END
 #!/usr/bin/env ruby
 
 goo goo goo Aquaria goo goo
 END
+    r = asterize_ansi(%x{rack Caprica --passthru -n})
+    r.include?(t1).should be_true
+    r.include?(t2).should be_true
+    r.include?(t3).should be_true
+    r.split("\n").length.should < (t1+t2+t3).split("\n").length+5
   end
   
   it "--nocolour means do not colourize the output" do
@@ -420,12 +441,13 @@ describe "Rack", "with combinations of options" do
   end
   
   it "should process -c -v " do
-    strip_ansi(%x{rack Pikon -c -v}).should == t=<<END
+    t1=<<END
 quux.py:1
 dir1/bar.rb:7
 foo.rb:11
 shebang:3
 END
+    sort_lines(strip_ansi(%x{rack Pikon -c -v})).should == sort_lines(t1)
   end
 end
 
