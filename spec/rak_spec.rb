@@ -78,6 +78,8 @@ END
 
 END
   end
+  
+  it "recognizes Makefiles and Rakefiles"
 end
 
 describe "Rak", "with FILE or STDIN inputs" do
@@ -413,6 +415,19 @@ foo.rb
 END
   end
   
+  it "-C works correctly for nearby results" do
+    strip_ansi(%x{rak Pik -g foo -C}).should == t=<<END
+foo.rb
+   4|foo Capsicum foo foo foo foo foo
+   5|
+   6|foo foo foo foo foo Pikon foo foo
+   7|
+   8|foo Pikon foo foo foo foo foo foo
+   9|
+  10|foo foo Six foo foo foo Six foo
+
+END
+  end
   it "-g REGEX only searches in files matching REGEX" do
     asterize_ansi(%x{rak Pikon -g f.o}).should == t=<<END
 *foo.rb*
