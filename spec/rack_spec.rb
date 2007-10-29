@@ -2,15 +2,15 @@
 
 require File.dirname(__FILE__) + "/spec_helpers"
 
-describe "Rack", "with no options" do 
+describe "Rak", "with no options" do 
   before(:all) do
-    ENV['RACK_TEST'] = "true"
+    ENV['RAK_TEST'] = "true"
   end
   after(:all) do
-    ENV['RACK_TEST'] = "false"
+    ENV['RAK_TEST'] = "false"
   end
   it "prints all matches from files in the current directory" do
-    asterize_ansi(%x{rack Cap.ic}).should == t=<<END
+    asterize_ansi(%x{rak Cap.ic}).should == t=<<END
 *foo.rb*
    3|foo foo foo *Capric*a foo foo foo
    4|foo *Capsic*um foo foo foo foo foo
@@ -19,7 +19,7 @@ END
   end
   
   it "prints all matches correctly" do
-    strip_ansi(%x{rack foo}).should == t=<<END
+    strip_ansi(%x{rak foo}).should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
@@ -33,7 +33,7 @@ END
   end
 
   it "prints all matches from files in subdirectories" do
-    asterize_ansi(%x{rack  Pikon}).should == t=<<END
+    asterize_ansi(%x{rak  Pikon}).should == t=<<END
 *dir1/bar.rb*
    2|bar bar bar bar *Pikon* bar
    9|bar bar *Pikon* bar bar bar
@@ -46,7 +46,7 @@ END
   end
   
   it "prints multiple matches in a line" do
-    asterize_ansi(%x{rack Six}).should == t=<<END
+    asterize_ansi(%x{rak Six}).should == t=<<END
 *foo.rb*
   10|foo foo *Six* foo foo foo *Six* foo
   11|foo foo foo foo *Six* foo foo foo
@@ -55,24 +55,24 @@ END
   end
   
   it "skips VC dirs" do
-    %x{rack Aerelon}.should == ""
+    %x{rak Aerelon}.should == ""
   end
   
   it "does not follow symlinks" do
-    %x{rack Sagitarron}.should == ""
+    %x{rak Sagitarron}.should == ""
   end
   
   it "changes defaults when redirected" do
-    ENV['RACK_TEST'] = "false"
-    asterize_ansi(%x{rack Six | cat}).should == t=<<END
+    ENV['RAK_TEST'] = "false"
+    asterize_ansi(%x{rak Six | cat}).should == t=<<END
 foo.rb   10|foo foo Six foo foo foo Six foo
 foo.rb   11|foo foo foo foo Six foo foo foo
 END
-    ENV['RACK_TEST'] = "true"
+    ENV['RAK_TEST'] = "true"
   end
 
   it "searches shebangs for valid inputs" do
-    asterize_ansi(%x{rack Aquaria}).should == t=<<END
+    asterize_ansi(%x{rak Aquaria}).should == t=<<END
 *shebang*
    3|goo goo goo *Aquaria* goo goo
 
@@ -80,19 +80,19 @@ END
   end
 end
 
-describe "Rack", "with FILE or STDIN inputs" do
+describe "Rak", "with FILE or STDIN inputs" do
   before(:all) do
-    ENV['RACK_TEST'] = "true"
+    ENV['RAK_TEST'] = "true"
   end
   after(:all) do
-    ENV['RACK_TEST'] = "false"
+    ENV['RAK_TEST'] = "false"
   end
   it "should only search in given files or directories" do
-    asterize_ansi(%x{rack Pikon foo.rb}).should == t=<<END
+    asterize_ansi(%x{rak Pikon foo.rb}).should == t=<<END
    6|foo foo foo foo foo *Pikon* foo foo
    8|foo *Pikon* foo foo foo foo foo foo
 END
-    strip_ansi(%x{rack Pikon dir1/}).should == t=<<END
+    strip_ansi(%x{rak Pikon dir1/}).should == t=<<END
 dir1/bar.rb
    2|bar bar bar bar Pikon bar
    9|bar bar Pikon bar bar bar
@@ -101,24 +101,24 @@ END
   end
   
   it "should search in STDIN by default if no files are specified" do
-    asterize_ansi(%x{cat _darcs/baz.rb | rack Aere}).should == t=<<END
+    asterize_ansi(%x{cat _darcs/baz.rb | rak Aere}).should == t=<<END
    2|baz baz baz *Aere*lon baz baz baz
 END
   end
   
   it "only searches STDIN when piped to" do
-    asterize_ansi(%x{echo asdfCapasdf | rack Cap}).should == t=<<END
+    asterize_ansi(%x{echo asdfCapasdf | rak Cap}).should == t=<<END
    1|asdf*Cap*asdf
 END
   end
 end
 
-describe "Rack", "options" do
+describe "Rak", "options" do
   before(:all) do
-    ENV['RACK_TEST'] = "true"
+    ENV['RAK_TEST'] = "true"
   end
   after(:all) do
-    ENV['RACK_TEST'] = "false"
+    ENV['RAK_TEST'] = "false"
   end
   it "prints only files with --files" do
     t=<<END
@@ -127,11 +127,11 @@ dir1/bar.rb
 foo.rb
 shebang
 END
-    sort_lines(%x{rack -f}).should == sort_lines(t)
+    sort_lines(%x{rak -f}).should == sort_lines(t)
   end
   
   it "prints a maximum number of matches if --max-count=x is specified" do
-    strip_ansi(%x{rack Cap.ic -m 1}).should == t=<<END
+    strip_ansi(%x{rak Cap.ic -m 1}).should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
 
@@ -139,7 +139,7 @@ END
   end
   
   it "prints the evaluated output for --output" do
-    strip_ansi(%x{rack Cap --output='$&'}).should == t=<<END
+    strip_ansi(%x{rak Cap --output='$&'}).should == t=<<END
 Cap
 Cap
 END
@@ -153,11 +153,11 @@ dir1/bar.rb:2
 foo.rb:2
 shebang:0
 END
-    sort_lines(strip_ansi(%x{rack Pik -c})).should == sort_lines(t)
+    sort_lines(strip_ansi(%x{rak Pik -c})).should == sort_lines(t)
   end
   
   it "-h suppresses filename and line number printing" do
-    asterize_ansi(%x{rack Pik -h}).should == t=<<END
+    asterize_ansi(%x{rak Pik -h}).should == t=<<END
 bar bar bar bar *Pik*on bar
 bar bar *Pik*on bar bar bar
 foo foo foo foo foo *Pik*on foo foo
@@ -166,7 +166,7 @@ END
   end
   
   it "ignores case with -i" do
-    strip_ansi(%x{rack six -i}).should == t=<<END
+    strip_ansi(%x{rak six -i}).should == t=<<END
 foo.rb
   10|foo foo Six foo foo foo Six foo
   11|foo foo foo foo Six foo foo foo
@@ -206,7 +206,7 @@ shebang
    2|
    3|goo goo goo Aquaria goo goo
 END
-    r = strip_ansi(%x{rack foo -v})
+    r = strip_ansi(%x{rak foo -v})
     r.include?(t1).should be_true
     r.include?(t12).should be_true
     r.include?(t2).should be_true
@@ -215,7 +215,7 @@ END
   end
   
   it "doesn't descend into subdirs with -n" do
-    strip_ansi(%x{rack Pikon -n}).should == t=<<END
+    strip_ansi(%x{rak Pikon -n}).should == t=<<END
 foo.rb
    6|foo foo foo foo foo Pikon foo foo
    8|foo Pikon foo foo foo foo foo foo
@@ -224,29 +224,29 @@ END
   end
   
   it "quotes meta-characters with -Q" do
-    strip_ansi(%x{rack Cap. -Q}).should == ""
+    strip_ansi(%x{rak Cap. -Q}).should == ""
   end
   
   it "prints only the matching portion with -o" do
-    strip_ansi(%x{rack Cap -o}).should == t=<<END
+    strip_ansi(%x{rak Cap -o}).should == t=<<END
 Cap
 Cap
 END
   end
   
   it "matches whole words only with -w" do
-    strip_ansi(%x{rack Cap -w}).should == ""
+    strip_ansi(%x{rak Cap -w}).should == ""
   end
   
    it "prints the file on each line with --nogroup" do
-    asterize_ansi(%x{rack Cap --nogroup}).should == t=<<END
+    asterize_ansi(%x{rak Cap --nogroup}).should == t=<<END
 *foo.rb*    3|foo foo foo *Cap*rica foo foo foo
 *foo.rb*    4|foo *Cap*sicum foo foo foo foo foo
 END
   end
   
   it "-l means only print filenames with matches" do
-    asterize_ansi(%x{rack Caprica -l}).should == t=<<END
+    asterize_ansi(%x{rak Caprica -l}).should == t=<<END
 foo.rb
 END
   end
@@ -257,7 +257,7 @@ quux.py
 dir1/bar.rb
 shebang
 END
-    sort_lines(asterize_ansi(%x{rack Caprica -L})).should == sort_lines(t)
+    sort_lines(asterize_ansi(%x{rak Caprica -L})).should == sort_lines(t)
   end
   
   it "--passthru means print all lines whether matching or not" do
@@ -284,7 +284,7 @@ END
 
 goo goo goo Aquaria goo goo
 END
-    r = asterize_ansi(%x{rack Caprica --passthru -n})
+    r = asterize_ansi(%x{rak Caprica --passthru -n})
     r.include?(t1).should be_true
     r.include?(t2).should be_true
     r.include?(t3).should be_true
@@ -292,7 +292,7 @@ END
   end
   
   it "--nocolour means do not colourize the output" do
-    asterize_ansi(%x{rack Cap --nocolour}).should == t=<<END
+    asterize_ansi(%x{rak Cap --nocolour}).should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
@@ -301,7 +301,7 @@ END
   end
   
   it "-a means to search every file" do
-    asterize_ansi(%x{rack Libris -a}).should == t=<<END
+    asterize_ansi(%x{rak Libris -a}).should == t=<<END
 *qux*
    1|qux qux qux *Libris* qux qux qux
 
@@ -310,31 +310,31 @@ END
   end
   
   it "--ruby means only ruby files" do
-    asterize_ansi(%x{rack Virgon --ruby}).should == ""
+    asterize_ansi(%x{rak Virgon --ruby}).should == ""
   end
   
   it "--python means only python files" do
-    asterize_ansi(%x{rack Cap --python}).should == ""
+    asterize_ansi(%x{rak Cap --python}).should == ""
   end
   
   it "--noruby means exclude ruby files" do
-    asterize_ansi(%x{rack Cap --noruby}).should == ""
+    asterize_ansi(%x{rak Cap --noruby}).should == ""
   end
   
   it "--type=ruby means only ruby files" do
-    asterize_ansi(%x{rack Virgon --type=ruby}).should == ""
+    asterize_ansi(%x{rak Virgon --type=ruby}).should == ""
   end
   
   it "--type=python means only python files" do
-    asterize_ansi(%x{rack Cap --type=python}).should == ""
+    asterize_ansi(%x{rak Cap --type=python}).should == ""
   end
   
   it "--type=noruby means exclude ruby files" do
-    asterize_ansi(%x{rack Cap --type=noruby}).should == ""
+    asterize_ansi(%x{rak Cap --type=noruby}).should == ""
   end
   
   it "--sort-files" do
-    %x{rack -f --sort-files}.should == t=<<END
+    %x{rak -f --sort-files}.should == t=<<END
 dir1/bar.rb
 foo.rb
 quux.py
@@ -343,7 +343,7 @@ END
   end
   
   it "--follow means follow symlinks" do 
-    strip_ansi(%x{rack Sagitarron --follow}).should == t=<<END
+    strip_ansi(%x{rak Sagitarron --follow}).should == t=<<END
 corge.rb
    1|corge corge corge Sagitarron corge
 
@@ -354,7 +354,7 @@ END
   end
   
   it "-A NUM means show NUM lines after" do 
-    strip_ansi(%x{rack Caps -A 2}).should == t=<<END
+    strip_ansi(%x{rak Caps -A 2}).should == t=<<END
 foo.rb
    4|foo Capsicum foo foo foo foo foo
    5|
@@ -364,7 +364,7 @@ END
   end
   
   it "-A should work when there are matches close together" do 
-    strip_ansi(%x{rack foo -A 2}).should == t=<<END
+    strip_ansi(%x{rak foo -A 2}).should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
@@ -382,7 +382,7 @@ END
   end
   
   it "-B NUM means show NUM lines before" do 
-    strip_ansi(%x{rack Caps -B 2}).should == t=<<END
+    strip_ansi(%x{rak Caps -B 2}).should == t=<<END
 foo.rb
    2|
    3|foo foo foo Caprica foo foo foo
@@ -392,7 +392,7 @@ END
   end
   
   it "-C means show 2 lines before and after" do 
-    strip_ansi(%x{rack Caps -C}).should == t=<<END
+    strip_ansi(%x{rak Caps -C}).should == t=<<END
 foo.rb
    2|
    3|foo foo foo Caprica foo foo foo
@@ -404,7 +404,7 @@ END
   end
   
   it "-C 1 means show 1 lines before and after" do 
-    strip_ansi(%x{rack Caps -C 1}).should == t=<<END
+    strip_ansi(%x{rak Caps -C 1}).should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
@@ -414,7 +414,7 @@ END
   end
   
   it "-g REGEX only searches in files matching REGEX" do
-    asterize_ansi(%x{rack Pikon -g f.o}).should == t=<<END
+    asterize_ansi(%x{rak Pikon -g f.o}).should == t=<<END
 *foo.rb*
    6|foo foo foo foo foo *Pikon* foo foo
    8|foo *Pikon* foo foo foo foo foo foo
@@ -423,8 +423,8 @@ END
   end
   
   it "-x means match only whole lines" do
-    asterize_ansi(%x{rack Cap -x}).should == ""
-    asterize_ansi(%x{rack "(foo )+Cap\\w+( foo)+" -x}).should == t=<<END
+    asterize_ansi(%x{rak Cap -x}).should == ""
+    asterize_ansi(%x{rak "(foo )+Cap\\w+( foo)+" -x}).should == t=<<END
 *foo.rb*
    3|*foo foo foo Caprica foo foo foo*
    4|*foo Capsicum foo foo foo foo foo*
@@ -433,12 +433,12 @@ END
   end
 end
 
-describe "Rack", "with combinations of options" do
+describe "Rak", "with combinations of options" do
   before(:all) do
-    ENV['RACK_TEST'] = "true"
+    ENV['RAK_TEST'] = "true"
   end
   after(:all) do
-    ENV['RACK_TEST'] = "false"
+    ENV['RAK_TEST'] = "false"
   end
   
   it "should process -c -v " do
@@ -448,7 +448,7 @@ dir1/bar.rb:7
 foo.rb:11
 shebang:3
 END
-    sort_lines(strip_ansi(%x{rack Pikon -c -v})).should == sort_lines(t1)
+    sort_lines(strip_ansi(%x{rak Pikon -c -v})).should == sort_lines(t1)
   end
 end
 

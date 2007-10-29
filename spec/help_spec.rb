@@ -2,17 +2,17 @@
 
 require File.dirname(__FILE__) + "/spec_helpers"
 
-describe "Rack", "help and errors" do
+describe "Rak", "help and errors" do
   before(:all) do
-    ENV['RACK_TEST'] = "true"
+    ENV['RAK_TEST'] = "true"
   end
   after(:all) do
-    ENV['RACK_TEST'] = "false"
+    ENV['RAK_TEST'] = "false"
   end
   
   it "--version prints version information" do
-    strip_ansi(%x{rack --version}).should == t=<<END
-rack 0.0.1
+    strip_ansi(%x{rak --version}).should == t=<<END
+rak 0.0.1
 
 Copyright 2007 Daniel Lucraft, all rights reserved. 
 Based on the perl tool 'ack' by Andy Lester.
@@ -23,28 +23,28 @@ END
   end
   
   it "prints unknown type errors" do
-    %x{rack Virg --type=pyth}.should == t=<<END
-rack: Unknown --type "pyth"
-rack: See rack --help types
+    %x{rak Virg --type=pyth}.should == t=<<END
+rak: Unknown --type "pyth"
+rak: See rak --help types
 END
   end
   
   it "--help prints help information" do
-    %x{rack Virg --help}.split("\n")[0].should == "Usage: rack [OPTION]... PATTERN [FILES]"
+    %x{rak Virg --help}.split("\n")[0].should == "Usage: rak [OPTION]... PATTERN [FILES]"
   end
   
   it "--help types prints type information" do
-    %x{rack --help types}.split("\n")[2].should == "The following is the list of filetypes supported by rack.  You can"
+    %x{rak --help types}.split("\n")[2].should == "The following is the list of filetypes supported by rak.  You can"
   end
   
   it "no options or patterns prints the usage info" do
-    %x{rack}.split("\n")[0].should == "Usage: rack [OPTION]... PATTERN [FILES]"
+    %x{rak}.split("\n")[0].should == "Usage: rak [OPTION]... PATTERN [FILES]"
   end
 
   it "prints a nice message for unknown options" do
     t=<<END
-rack: see rack --help for usage.
+rak: see rak --help for usage.
 END
-    %x{rack foo --asfdasfd}.include?(t).should be_true
+    %x{rak foo --asfdasfd}.include?(t).should be_true
   end
 end

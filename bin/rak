@@ -11,7 +11,7 @@ rescue LoadError
   $use_onig = false
 end
 
-class Rack
+class Rak
   VERSION = "0.0.1"
   
   FILE_COLOUR = "\033[1;31m"
@@ -19,7 +19,7 @@ class Rack
   CLEAR_COLOURS = "\033[0m\033[1;37m"
   
   VERSION_INFO=<<END
-rack #{VERSION}
+rak #{VERSION}
 
 Copyright 2007 Daniel Lucraft, all rights reserved. 
 Based on the perl tool 'ack' by Andy Lester.
@@ -158,9 +158,9 @@ END
     opt[:collect_context] = false
     opt[:filename_regex] = nil
     
-    # if redirected (RACK_TEST allows us to redirect in testing and still 
+    # if redirected (RAK_TEST allows us to redirect in testing and still 
     # get the non-redirected defaults).
-    if STDOUT.isatty == false and [nil, "false"].include? ENV['RACK_TEST']
+    if STDOUT.isatty == false and [nil, "false"].include? ENV['RAK_TEST']
       opt[:colour] = false
       opt[:print_file_each_line] = true
       opt[:print_filename] = false
@@ -282,7 +282,7 @@ END
         end
       end
     rescue GetoptLong::InvalidOption => ex
-      puts "rack: see rack --help for usage."
+      puts "rak: see rak --help for usage."
       exit
     rescue SystemExit
       exit
@@ -651,24 +651,24 @@ END
   end
   
   def self.unknown_type(type)
-    puts "rack: Unknown --type \"#{type}\""
-    puts "rack: See rack --help types"
+    puts "rak: Unknown --type \"#{type}\""
+    puts "rak: See rak --help types"
     exit
   end
 end
 
-Rack.search
+Rak.search
 
 __END__
-Usage: rack [OPTION]... PATTERN [FILES]
+Usage: rak [OPTION]... PATTERN [FILES]
 
 Search for PATTERN in each source file in the tree from cwd on down.
 If [FILES] is specified, then only those files/directories are checked.
-rack will search STDIN only if no FILES are specified.
+rak will search STDIN only if no FILES are specified.
 
 #Default switches may be specified in ACK_OPTIONS environment variable.
 
-Example: rack -i select
+Example: rak -i select
 
 Searching:
   -i, --ignore-case     Ignore case distinctions
@@ -723,16 +723,16 @@ File inclusion/exclusion:
   --type=ruby           Include only Ruby files.
   --noruby              Exclude Ruby files.
   --type=noruby         Exclude Ruby files.
-                        See "rack --help type" for supported filetypes.
+                        See "rak --help type" for supported filetypes.
   --[no]follow          Follow symlinks.  Default is off.
 
 Miscellaneous:
   --help                This help
   --version             Display version & copyright
 __________
-Usage: rack [OPTION]... PATTERN [FILES]
+Usage: rak [OPTION]... PATTERN [FILES]
 
-The following is the list of filetypes supported by rack.  You can
+The following is the list of filetypes supported by rak.  You can
 specify a file type with the --type=TYPE format, or the --TYPE
 format.  For example, both --type=ruby and --ruby work.
 
