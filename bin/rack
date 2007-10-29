@@ -11,6 +11,13 @@ rescue LoadError
   $use_onig = false
 end
 
+def time(name)
+  s = Time.now
+  yield
+  e = Time.now
+  puts "time for #{name}:#{e-s}"
+end
+
 class Rak
   VERSION = "0.0.1"
   
