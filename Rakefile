@@ -1,8 +1,9 @@
 
 require 'rubygems'
 require 'hoe'
+require 'lib/rak'
 
-Hoe.new('rack', "1.0.0") do |p|
+Hoe.new('rak', Rak::VERSION) do |p|
   p.rubyforge_name = 'rak'
   p.author = 'Daniel Lucraft'
   p.email = 'dan@fluentradical.com'

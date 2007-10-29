@@ -172,9 +172,9 @@ END
         case option
         when '--help'
           if arg == ""
-            puts usage
+            puts USAGE_HELP
           else
-            puts DATA.read.split("__________\n")[1]
+            puts TYPES_HELP.read.split("__________\n")[1]
           end
           exit
         when '--max-count'
@@ -289,7 +289,7 @@ END
     end
 
     if ARGV.empty? and opt[:print_filelist] == false
-      puts usage
+      puts USAGE_HELP
       exit
     end
     
@@ -309,10 +309,6 @@ END
     files.each do |fn|
       puts fn
     end
-  end
-  
-  def self.usage
-    DATA.read.split("__________\n")[0]
   end
   
   def self.get_all_files(files=[], dir="./")
@@ -657,9 +653,7 @@ END
   end
 end
 
-Rak.search
-
-__END__
+USAGE_HELP=<<END
 Usage: rak [OPTION]... PATTERN [FILES]
 
 Search for PATTERN in each source file in the tree from cwd on down.
@@ -729,7 +723,9 @@ File inclusion/exclusion:
 Miscellaneous:
   --help                This help
   --version             Display version & copyright
-__________
+END
+
+TYPES_HELP=<<END
 Usage: rak [OPTION]... PATTERN [FILES]
 
 The following is the list of filetypes supported by rak.  You can
@@ -775,3 +771,6 @@ Note that some extensions may appear in multiple types.  For example,
     --[no]vim       .vim
     --[no]xml       .xml .dtd .xslt
     --[no]yaml      .yaml .yml
+END
+
+Rak.search
