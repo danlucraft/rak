@@ -712,7 +712,7 @@ File inclusion/exclusion:
   -n                    No descending into subdirectories
   -g REGEX              Only search in file matching REGEX.
   -a, --all             All files, regardless of extension (but still skips
-                        blib, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
+                        blib, pkg, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
   --type=ruby           Include only Ruby files.
   --noruby              Exclude Ruby files.
