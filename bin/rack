@@ -50,6 +50,7 @@ END
         :parrot      => %w( pir pasm pmc ops pod pg tg ),
         :perl        => %w( pl pm pod t ),
         :php         => %w( php phpt php3 php4 php5 ),
+        :prolog      => %w( pl ecl ),
         :python      => %w( py ),
         :ruby        => %w( rb rhtml rjs rxml ),
         :scheme      => %w( scm ),
