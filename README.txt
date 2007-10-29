@@ -23,7 +23,8 @@ Examples with similar grep:
 * Highlighted output.
 * Automatically recurses down the current directory or any given
   directories.
-* Skips version control directories, and backups like '~' and '#'.
+* Skips version control directories, backups like '~' and '#' and your
+* ruby project's pkg directory.
 * Allows inclusion and exclusion of files based on types.
 * Many options similar to grep.
 
