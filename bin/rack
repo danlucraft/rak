@@ -7,7 +7,7 @@ begin
   require 'oniguruma'
   require 'inline'
   $use_onig = true
-rescue
+rescue LoadError
   $use_onig = false
 end
 
@@ -621,15 +621,15 @@ END
   end
   
   def self.print_highlighted(prefix, line, matches)
-    from1 = matches[0].begin
+    from1 = matches[0].begin(0)
     pre = ""
     pre = line[0..(from1-1)] if from1 > 0
     print prefix
     print pre
     ptr = 0
     0.upto(matches.length-1) do |n|
-      from = matches[n].begin
-      to   = matches[n].end
+      from = matches[n].begin(0)
+      to   = matches[n].end(0)
       print MATCH_COLOUR +
         line[(from+ptr)..(to+ptr-1)] +
         CLEAR_COLOURS
@@ -637,7 +637,7 @@ END
       if n == matches.length - 1
         puts matches.last.post_match
       else
-        print line[ptr..(matches[n+1].begin-1+ptr)]
+        print line[ptr..(matches[n+1].begin(0)-1+ptr)]
       end
     end
   end
