@@ -1,32 +1,49 @@
-rack
-    by FIX (your name)
-    FIX (url)
+rak
+    by Daniel Lucraft
+    http://www.daniellucraft.com/blog/projects
 
 == DESCRIPTION:
   
-FIX (describe your package)
+Replacement for grep. Recursively scans directories to match a given
+Ruby regular expression. Prints highlighted results.
+
+Based on the Perl tool 'ack' by Andy Lester.
+
+Examples with similar grep:
+ 
+  $ rak Pattern
+  $ grep pattern $(find . | grep -v .svn)
+
+  $ rak --ruby pattern
+  $ grep pattern $(find . -name '*.rb' | grep -v .svn)
 
 == FEATURES/PROBLEMS:
   
-* FIX (list of features or problems)
+* Ruby regular expression syntax (uses oniguruma gem if installed).
+* Highlighted output.
+* Automatically recurses down the current directory or any given
+  directories.
+* Skips version control directories, and backups like '~' and '#'.
+* Allows inclusion and exclusion of files based on types.
+* Many options similar to grep.
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+See 'rak --help' for usage information.
 
 == REQUIREMENTS:
 
-* FIX (list of requirements)
+* Ruby
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+* gem install rak
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2007 FIX
+Copyright (c) 2007 Daniel Lucraft
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
