@@ -481,6 +481,17 @@ Rakefile:1
 END
     sort_lines(strip_ansi(%x{rak Pikon -c -v})).should == sort_lines(t1)
   end
+
+  it "-h and redirection" do
+    ENV['RAK_TEST'] = "false"
+    %x{rak Pik -h | cat}.should == t=<<END
+bar bar bar bar Pikon bar
+bar bar Pikon bar bar bar
+foo foo foo foo foo Pikon foo foo
+foo Pikon foo foo foo foo foo foo
+END
+    ENV['RAK_TEST'] = "true"
+  end
 end
 
 

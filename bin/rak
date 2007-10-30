@@ -169,7 +169,7 @@ END
     
     # if redirected (RAK_TEST allows us to redirect in testing and still 
     # get the non-redirected defaults).
-    if STDOUT.isatty == false and [nil, "false"].include? ENV['RAK_TEST']
+    if STDOUT.isatty == false and ENV['RAK_TEST'] != "true"
       opt[:colour] = false
       opt[:print_file_each_line] = true
       opt[:print_filename] = false
@@ -207,6 +207,7 @@ END
         when '-h'
           opt[:print_filename] = false
           opt[:print_line_number] = false
+          opt[:print_file_each_line] = false
         when '-i'
           opt[:ignore_case] = true
         when '-v'
@@ -305,7 +306,7 @@ END
     files = get_files
     
     compile_match_file
-    
+
     unless opt[:colour]
       FILE_COLOUR.replace ""
       CLEAR_COLOURS.replace ""
@@ -564,12 +565,12 @@ END
                       end
                       if opt[:use_context]
                         if opt[:before_context] > 0 
-   code << %{             if print_num == 0                                                 }
-   code << %{               before_context << [i, line]                                   }
-   code << %{               if before_context.length == before_context_size+1                            }
-   code << %{                 before_context = before_context[1..-1]                            }
-   code << %{               end                                                               }
-   code << %{             end                                                               }
+    code << %{            if print_num == 0                                                 }
+    code << %{              before_context << [i, line]                                   }
+    code << %{              if before_context.length == before_context_size+1                            }
+    code << %{                before_context = before_context[1..-1]                            }
+    code << %{              end                                                               }
+    code << %{            end                                                               }
                         end
     code << %{          if print_num > 0                                                 }
     code << %{            print_num -= 1                                                 }
@@ -578,74 +579,74 @@ END
     code << %{                print "\#{i.to_s.rjust(4)}|"                            }
                             end
     code << %{              puts "\#{line}"                                          }
-   code << %{             end                                                        }
+    code << %{            end                                                        }
                         end
                       end
-   code << %{       else                                                                      }
-   code << %{         print_num = opt[:after_context]                                          }
+    code << %{      else                                                                      }
+    code << %{        print_num = opt[:after_context]                                          }
                       if opt[:print_filename]
-   code << %{           unless displayed_filename                                          }
-   code << %{             puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
-   code << %{             displayed_filename = true                                          }
-   code << %{           end                                                               }
+    code << %{          unless displayed_filename                                          }
+    code << %{            puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
+    code << %{            displayed_filename = true                                          }
+    code << %{          end                                                               }
                       end
                       if opt[:before_context] > 0
-   code << %{           before_context.each do |before_i, before_line|                            }
+    code << %{          before_context.each do |before_i, before_line|                            }
                           if opt[:print_line_number]
-   code << %{               print "\#{before_i.to_s.rjust(4)}|"                            }
+    code << %{              print "\#{before_i.to_s.rjust(4)}|"                            }
                           end
-   code << %{             puts before_line                                                 }
-   code << %{           end                                                               }
-   code << %{           before_context = []                                                 }
+    code << %{            puts before_line                                                 }
+    code << %{          end                                                               }
+    code << %{          before_context = []                                                 }
                       end       
                       if opt[:print_output]
-   code << %{           matches.each {|m| puts m}                                          }
+    code << %{          matches.each {|m| puts m}                                          }
                       end
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
-   code << %{             prefix = "\#{i.to_s.rjust(4)}|"                                   }
+    code << %{            prefix = "\#{i.to_s.rjust(4)}|"                                   }
                         else
                           if opt[:print_file_each_line]
-   code << %{               fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + " " : "")                            }
-   code << %{               prefix = fn_str + "\#{i.to_s.rjust(4)}|"                            }
+    code << %{              fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + " " : "")                            }
+    code << %{              prefix = fn_str + "\#{i.to_s.rjust(4)}|"                            }
                           else
-   code << %{               prefix = ""                                                        }
+    code << %{              prefix = ""                                                        }
                           end
                         end
-   code << %{           print_highlighted(prefix, line, matches)                            }
+    code << %{          print_highlighted(prefix, line, matches)                            }
                       end
-   code << %{       end                                                                      }
+    code << %{      end                                                                      }
                     if opt[:max_count] 
-   code << %{         if count >= opt[:max_count]                                          }
-   code << %{           break                                                               }
-   code << %{         end                                                               }
+    code << %{        if count >= opt[:max_count]                                          }
+    code << %{          break                                                               }
+    code << %{        end                                                               }
                     end
-   code << %{       matches.clear                                                        }
+    code << %{      matches.clear                                                        }
                   end
-   code << %{   end                                                                      }
+    code << %{  end                                                                      }
                 if opt[:print_highlighted] and opt[:print_filename]
-   code << %{     if count > 0                                                               }
-   code << %{       puts                                                                      }
-   code << %{     end                                                                      }
+    code << %{    if count > 0                                                               }
+    code << %{      puts                                                                      }
+    code << %{    end                                                                      }
                 end
-   code << %{   f.close if f === File                                                        }
+    code << %{  f.close if f === File                                                        }
                 if opt[:print_num_matches]
                   if opt[:invert_match]
-   code << %{       puts "\#{fn}:\#{i-count}"                                                 }
+    code << %{      puts "\#{fn}:\#{i-count}"                                                 }
                   else       
-   code << %{       puts "\#{fn}:\#{count}"                                                 }
+    code << %{      puts "\#{fn}:\#{count}"                                                 }
                   end
                 end
                 if opt[:print_file_if_match]
-   code << %{     if count > 0                                                               }
-   code << %{       puts fn                                                               }
-   code << %{     end                                                                      }
+    code << %{    if count > 0                                                               }
+    code << %{      puts fn                                                               }
+    code << %{    end                                                                      }
                 end
     
                 if opt[:print_file_if_no_match]
-   code << %{     if count == 0                                                               }
-   code << %{       puts fn                                                                      }
-   code << %{     end                                                                      }
+    code << %{    if count == 0                                                               }
+    code << %{      puts fn                                                                      }
+    code << %{    end                                                                      }
                 end 
     code << %{end }
 #    if ENV['RACK_TEST'] == "true"
