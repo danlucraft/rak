@@ -386,7 +386,7 @@ END
       end
       new_files = []
       files.each do |fn|
-        if types.any? {|ext| fn.include? ext}
+        if types.any? {|ext| File.extname(fn) == ext or fn.split("/").last == ext}
           new_files << fn
         elsif ext = shebang_matches(fn)
           shebang_files << [fn, ext]
