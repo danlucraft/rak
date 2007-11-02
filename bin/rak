@@ -642,9 +642,6 @@ END
     code << %{    end                                                                      }
                 end 
     code << %{end }
-#    if ENV['RACK_TEST'] == "true"
-#      File.open("compiled_method.rb", "w") {|f| f.puts code}
-#    end
     module_eval code
   end
   
