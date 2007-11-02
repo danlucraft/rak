@@ -11,7 +11,7 @@ Based on the Perl tool 'ack' by Andy Lester.
 
 Examples with similar grep:
  
-  $ rak Pattern
+  $ rak pattern
   $ grep pattern $(find . | grep -v .svn)
 
   $ rak --ruby pattern

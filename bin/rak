@@ -691,8 +691,6 @@ Search for PATTERN in each source file in the tree from cwd on down.
 If [FILES] is specified, then only those files/directories are checked.
 rak will search STDIN only if no FILES are specified.
 
-#Default switches may be specified in ACK_OPTIONS environment variable.
-
 Example: rak -i select
 
 Searching:
@@ -767,7 +765,6 @@ Note that some extensions may appear in multiple types.  For example,
 .pod files are both Perl and Parrot.
 
     --[no]asm       .s
-#    --[no]binary    Binary files, as defined by Perl's -B op (default: off)
     --[no]cc        .c .h .xs
     --[no]cpp       .cpp .m .h
     --[no]csharp    .cs
@@ -793,7 +790,6 @@ Note that some extensions may appear in multiple types.  For example,
     --[no]ruby      .rb .rhtml .rjs .rxml Rakefile
     --[no]scheme    .scm
     --[no]shell     .sh .bash .csh .ksh .zsh
-#    --[no]skipped   Files, but not directories, normally skipped by ack (default: off)
     --[no]sql       .sql .ctl
     --[no]tcl       .tcl
     --[no]tex       .tex .cls .sty
