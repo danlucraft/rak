@@ -461,6 +461,22 @@ END
 
 END
   end
+
+  it "-s means match only at the start of a line" do
+    asterize_ansi(%x{rak -s "foo Cap"}).should == t=<<END
+*foo.rb*
+   4|*foo Cap*sicum foo foo foo foo foo
+
+END
+  end
+
+  it "-e means match only at the end of a line" do
+    asterize_ansi(%x{rak -e "kon foo foo"}).should == t=<<END
+*foo.rb*
+   6|foo foo foo foo foo Pi*kon foo foo*
+
+END
+  end
 end
 
 describe "Rak", "with combinations of options" do

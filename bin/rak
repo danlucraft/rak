@@ -125,7 +125,9 @@ END
                             [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ],
                             [ '-g', GetoptLong::REQUIRED_ARGUMENT ],
-                            [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ]
+                            [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ],
+                            [ '-s', '--line-start', GetoptLong::NO_ARGUMENT ],
+                            [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ]
                             )
 
     dir = nil
@@ -145,6 +147,8 @@ END
     opt[:print_match] = false
     opt[:match_whole_words] = false
     opt[:match_whole_lines] = false
+    opt[:match_line_starts] = false
+    opt[:match_line_ends] = false
     opt[:print_file_each_line] = false
     opt[:print_file_if_match] = false
     opt[:print_file_if_no_match] = false
@@ -280,6 +284,10 @@ END
           opt[:filename_regex] = arg
         when '-x'
           opt[:match_whole_lines] = true
+        when '-s'
+          opt[:match_line_starts] = true
+        when '-e'
+          opt[:match_line_ends] = true
         end
       end
     rescue GetoptLong::InvalidOption => ex
@@ -474,6 +482,12 @@ END
     if opt[:match_whole_lines]
       str = "^" + str + "$"
     end
+    if opt[:match_line_starts]
+      str = "^" + str
+    end
+    if opt[:match_line_ends]
+      str = str + "$"
+    end
     if $use_onig
       if opt[:ignore_case]
         re = Oniguruma::ORegexp.new(str, :options => Oniguruma::OPTION_IGNORECASE)
@@ -517,7 +531,7 @@ END
     code << %{  elsif fn.is_a? IO               }
     code << %{    f = fn                        }
     code << %{  end                             }
-    
+
     code << %{  f.each_line do |line|                                          }
     code << %{    i += 1                                                         }
     code << %{    rest = line                                                      }
@@ -687,6 +701,8 @@ Searching:
   -w, --word-regexp     Force PATTERN to match only whole words
   -x, --line-regexp     Force PATTERN to match only whole lines
   -Q, --literal         Quote all metacharacters; expr is literal
+  -s, --line-start      Match only at the start of a line
+  -e, --line-start      Match only at the end of a line
 
 Search output:
   -l, --files-with-matches
