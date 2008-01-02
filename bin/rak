@@ -335,12 +335,14 @@ END
           end
         end
       else
-        if File.symlink? fn
-          if opt[:follow_symlinks]
+        if !File.socket? fn and File.readable? fn
+          if File.symlink? fn
+            if opt[:follow_symlinks]
+              files << fn
+            end
+          else
             files << fn
           end
-        else
-          files << fn
         end
       end
     end
