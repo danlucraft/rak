@@ -52,7 +52,7 @@ END
     :php         => %w( .php .phpt .php3 .php4 .php5 ),
     :prolog      => %w( .pl .ecl ),
     :python      => %w( .py ),
-    :ruby        => %w( .rb .rhtml .rjs .rxml Rakefile ),
+    :ruby        => %w( .rb .rhtml .rjs .rxml Rakefile .erb .haml),
     :scheme      => %w( .scm ),
     :shell       => %w( .sh .bash .csh .ksh .zsh ),
     :sql         => %w( .sql .ctl ),
