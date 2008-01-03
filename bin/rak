@@ -177,7 +177,7 @@ END
         when '--help'
           if arg == ""
             puts USAGE_HELP
-          elsif arg == "types"
+          elsif arg == "types" or arg == "type"
             puts TYPES_HELP
           end
           exit
