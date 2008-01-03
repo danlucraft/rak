@@ -793,7 +793,7 @@ Note that some extensions may appear in multiple types.  For example,
     --[no]php       .php .phpt .php3 .php4 .php5
     --[no]prolog    .pl .ecl
     --[no]python    .py
-    --[no]ruby      .rb .rhtml .rjs .rxml Rakefile
+    --[no]ruby      .rb .rhtml .rjs .rxml Rakefile .erb .haml
     --[no]scheme    .scm
     --[no]shell     .sh .bash .csh .ksh .zsh
     --[no]sql       .sql .ctl
