@@ -324,6 +324,7 @@ END
   
   def self.get_all_files(files=[], dir="./")
     Dir[dir+"*"].each do |fn|
+      next if fn == ".."
       if File.directory? fn
         if opt[:descend] 
           if File.symlink? fn

@@ -1,4 +1,6 @@
 
+HERE = File.expand_path(File.dirname(__FILE__))
+
 def strip_ansi(str)
   str.gsub /\033\[(\d;)?\d+m/, ""
 end
