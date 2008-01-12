@@ -3,6 +3,7 @@
 * Ignores socket files.
 * Added .erb and .haml to Ruby filetypes.
 * Added search at end-of/start-of line options
+* Fixed searching up the directory tree when passed '.'
 
 == 0.8.0 / 2007-10-30
 

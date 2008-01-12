@@ -1,10 +1,14 @@
 
+require 'fileutils'
 
 require File.dirname(__FILE__) + "/spec_helpers"
 
 describe "Rak", "with no options" do 
   before(:all) do
     ENV['RAK_TEST'] = "true"
+  end
+  before(:each)do
+    FileUtils.cd(HERE+"/example/")
   end
   after(:all) do
     ENV['RAK_TEST'] = "false"
@@ -477,11 +481,20 @@ END
 
 END
   end
+  
+  it "should not recurse down '..' when used with . " do
+    FileUtils.cd(HERE+"/example/dir1/")
+    asterize_ansi(%x{rak foo .}).should == t=<<END
+END
+  end
 end
 
 describe "Rak", "with combinations of options" do
   before(:all) do
     ENV['RAK_TEST'] = "true"
+  end
+  before(:each)do 
+    FileUtils.cd(HERE+"/example/")
   end
   after(:all) do
     ENV['RAK_TEST'] = "false"
