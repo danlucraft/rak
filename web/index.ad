@@ -1,7 +1,7 @@
 Rak
 ===
 Daniel Lucraft <dan@fluentradical.com>
-v0.8.0, Nov 07
+v0.9, Jan 2008
 
 Rak is a grep replacement in pure Ruby. It accepts Ruby syntax regular
 expressions and automatically recurses directories, skipping .svn/, 
