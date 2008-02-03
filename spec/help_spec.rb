@@ -12,9 +12,9 @@ describe "Rak", "help and errors" do
   
   it "--version prints version information" do
     strip_ansi(%x{rak --version}).should == t=<<END
-rak 0.0.1
+rak 0.9
 
-Copyright 2007 Daniel Lucraft, all rights reserved. 
+Copyright 2008 Daniel Lucraft, all rights reserved. 
 Based on the perl tool 'ack' by Andy Lester.
 
 This program is free software; you can redistribute it and/or modify it

@@ -1,4 +1,6 @@
 
+require 'fileutils'
+
 HERE = File.expand_path(File.dirname(__FILE__))
 
 def strip_ansi(str)
