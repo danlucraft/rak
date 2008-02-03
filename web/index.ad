@@ -54,6 +54,8 @@ Usage
     -w, --word-regexp     Force PATTERN to match only whole words
     -x, --line-regexp     Force PATTERN to match only whole lines
     -Q, --literal         Quote all metacharacters; expr is literal
+    -s, --line-start      Match only at the start of a line
+    -e, --line-start      Match only at the end of a line
 
   Search output:
     -l, --files-with-matches
