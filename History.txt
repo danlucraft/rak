@@ -1,4 +1,5 @@
 
+* Added .rake to ruby files
 * Colouring works on Win32 if win32console gem is installed.
 * Checks that file is readable by the current user.
 * Ignores socket files.
