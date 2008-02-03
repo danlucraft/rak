@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby
 
+if RUBY_PLATFORM =~ /mswin/
+  begin
+    require 'win32console'
+  rescue LoadError
+    ARGV << "--nocolour"
+  end
+end
+
 require 'getoptlong'
 
 begin
