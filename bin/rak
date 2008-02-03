@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'rubygems'
+
 if RUBY_PLATFORM =~ /mswin/
   begin
     require 'win32console'
@@ -11,7 +13,6 @@ end
 require 'getoptlong'
 
 begin
-  require 'rubygems'
   require 'oniguruma'
   require 'inline'
   $use_onig = true
