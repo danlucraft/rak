@@ -1,4 +1,6 @@
 
+== 0.9 / 2008-02-03
+
 * Added .rake to ruby files
 * Colouring works on Win32 if win32console gem is installed.
 * Checks that file is readable by the current user.
