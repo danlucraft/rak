@@ -13,9 +13,9 @@ Installing
 
   gem install rak
 
-Or download from link:http://rubyforge.org/projects/rak[Rubyforge]. Or clone from the git repo:
+Or clone from the git repo:
 
-  git clone git://git.donttreadonme.co.uk/rak
+  git clone git://github.com/danlucraft/rak.git
 
 To get coloured output on Windows install the win32console gem.
 

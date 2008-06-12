@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.2.1" />
+<meta name="generator" content="AsciiDoc 8.2.2" />
 <style type="text/css">
 /* Debug borders */
 p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
@@ -322,10 +322,10 @@ Perl tool <a href="http://petdance.com/ack/">ack</a> by Andy Lester.</p>
 <div class="content">
 <pre><tt>gem install rak</tt></pre>
 </div></div>
-<p>Or download from <a href="http://rubyforge.org/projects/rak">Rubyforge</a>. Or clone from the git repo:</p>
+<p>Or clone from the git repo:</p>
 <div class="literalblock">
 <div class="content">
-<pre><tt>git clone git://git.donttreadonme.co.uk/rak</tt></pre>
+<pre><tt>git clone git://github.com/danlucraft/rak.git</tt></pre>
 </div></div>
 <p>To get coloured output on Windows install the win32console gem.</p>
 <p>Please email comments and patches to dan@fluentradical.com.</p>
@@ -377,7 +377,9 @@ rak will search STDIN only if no FILES are specified.</tt></pre>
   -v, --invert-match    Invert match: select non-matching lines
   -w, --word-regexp     Force PATTERN to match only whole words
   -x, --line-regexp     Force PATTERN to match only whole lines
-  -Q, --literal         Quote all metacharacters; expr is literal</tt></pre>
+  -Q, --literal         Quote all metacharacters; expr is literal
+  -s, --line-start      Match only at the start of a line
+  -e, --line-start      Match only at the end of a line</tt></pre>
 </div></div>
 <div class="literalblock">
 <div class="content">
@@ -450,7 +452,7 @@ rak will search STDIN only if no FILES are specified.</tt></pre>
 <div id="footer">
 <div id="footer-text">
 Version 0.9<br />
-Last updated 03-Feb-2008 18:36:20 BST
+Last updated 12-Jun-2008 12:51:09 BST
 </div>
 </div>
 </body>
