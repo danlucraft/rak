@@ -15,4 +15,5 @@ Gem::Specification.new do |s|
   s.rubyforge_project = %q{rak}
   s.rubygems_version = %q{1.1.1}
   s.summary = %q{A grep replacement in Ruby, type "rak pattern".}
+
 end
