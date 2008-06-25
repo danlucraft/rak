@@ -544,7 +544,10 @@ END
     code << %{    f = fn                        }
     code << %{  end                             }
 
-    code << %{  f.each_line do |line|                                          }
+    code << %{  all = f.read                    }
+    code << %{  return unless all =~ re         }
+  
+    code << %{  all.each_line do |line|                                          }
     code << %{    i += 1                                                         }
     code << %{    rest = line                                                      }
     code << %{    while md = re.match(rest)                                   }
