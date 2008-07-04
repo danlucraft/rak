@@ -69,6 +69,7 @@ END
     :tex         => %w( .tex .cls .sty ),
     :text        => %w( .txt .text ),
     :tt          => %w( .tt .tt2 .ttml ),
+    :vala        => %w( .vala .vapi ),
     :vb          => %w( .bas .cls .frm .ctl .vb .resx ),
     :vim         => %w( .vim ),
     :yaml        => %w( .yaml .yml ),
