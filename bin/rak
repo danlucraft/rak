@@ -42,7 +42,7 @@ END
   FILE_TYPES = {
     :asm         => %w( .s .S ),
     :cc          => %w( .c .h .xs ),
-    :cpp         => %w( .cpp .m .h .C .H ),
+    :cpp         => %w( .cpp .cc .m .h .C .H ),
     :csharp      => %w( .cs ),
     :css         => %w( .css ),
     :elisp       => %w( .el ),
