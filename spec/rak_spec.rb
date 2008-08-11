@@ -158,14 +158,10 @@ Cap
 END
   end
   
-  
   it "-c prints only the number of matches found per file" do
     t=<<END
-quux.py:0
 dir1/bar.rb:2
 foo.rb:2
-shebang:0
-Rakefile:0
 END
     sort_lines(strip_ansi(%x{rak Pik -c})).should == sort_lines(t)
   end
@@ -447,6 +443,7 @@ foo.rb
 
 END
   end
+
   it "-g REGEX only searches in files matching REGEX" do
     asterize_ansi(%x{rak Pikon -g f.o}).should == t=<<END
 *foo.rb*
@@ -454,8 +451,9 @@ END
    8|foo *Pikon* foo foo foo foo foo foo
 
 END
+
   end
-  
+
   it "-x means match only whole lines" do
     asterize_ansi(%x{rak Cap -x}).should == ""
     asterize_ansi(%x{rak "(foo )+Cap\\w+( foo)+" -x}).should == t=<<END

@@ -524,10 +524,7 @@ END
   # the match method based on them. This is gives a 2x speedup over
   # the alternative.
   def self.compile_match_file
-    code = ""
-    def code.<<(str)
-      self.concat(str + "\n")
-    end
+    code = []
     code << %{def self.match_file(re, fn)        }
     code << %{  displayed_filename = false       }
     code << %{  count = 0                        }
@@ -546,7 +543,14 @@ END
     code << %{  end                             }
 
     code << %{  all = f.read                    }
-    code << %{  return unless all =~ re         }
+    code << %{  if all !~ re and not opt[:invert_match] and not opt[:print_entire_line_if_no_match]               }
+                  if opt[:print_file_if_no_match]
+    code << %{      if count == 0                                }
+    code << %{        puts fn                                     }
+    code << %{      end                                 }
+                  end
+    code << %{    return                     }
+    code << %{  end                   }
   
     code << %{  all.each_line do |line|                                          }
     code << %{    i += 1                                                         }
@@ -670,7 +674,7 @@ END
     code << %{    end                                                                      }
                 end 
     code << %{end }
-    module_eval code
+    module_eval code.join("\n")
   end
   
   def self.print_highlighted(prefix, line, matches)
