@@ -135,6 +135,7 @@ END
                             [ '--before-context', '-B', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '--context', '-C', GetoptLong::OPTIONAL_ARGUMENT ],
                             [ '-g', GetoptLong::REQUIRED_ARGUMENT ],
+                            [ '-k', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ],
                             [ '-s', '--line-start', GetoptLong::NO_ARGUMENT ],
                             [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ]
@@ -171,6 +172,7 @@ END
     opt[:before_context] = 0
     opt[:collect_context] = false
     opt[:filename_regex] = nil
+    opt[:neg_filename_regex] = nil
     
     # if redirected (RAK_TEST allows us to redirect in testing and still 
     # get the non-redirected defaults).
@@ -292,6 +294,8 @@ END
           opt[:after_context] = val
         when '-g'
           opt[:filename_regex] = arg
+        when '-k'
+          opt[:neg_filename_regex] = arg
         when '-x'
           opt[:match_whole_lines] = true
         when '-s'
@@ -451,6 +455,16 @@ END
         fn_re = Regexp.new(opt[:filename_regex])
       end
       files = files.select {|fn| fn =~ fn_re }
+    end
+    
+    # filter based on -k=REGEX
+    if opt[:neg_filename_regex]
+      if $use_onig
+        fn_re = Oniguruma::ORegexp.new(opt[:neg_filename_regex])
+      else
+        fn_re = Regexp.new(opt[:neg_filename_regex])
+      end
+      files = files.reject {|fn| fn =~ fn_re }
     end
     
     # remove the "./"
@@ -763,7 +777,8 @@ File finding:
 
 File inclusion/exclusion:
   -n                    No descending into subdirectories
-  -g REGEX              Only search in file matching REGEX.
+  -g REGEX              Only search in files matching REGEX.
+  -k REGEX              Only search in files not matching REGEX.
   -a, --all             All files, regardless of extension (but still skips
                         blib, pkg, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.

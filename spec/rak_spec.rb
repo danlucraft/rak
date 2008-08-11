@@ -454,6 +454,15 @@ END
 
   end
 
+  it "-k REGEX only searches in files not matching REGEX" do
+    asterize_ansi(%x{rak Pikon -k f.o}).should == t=<<END
+*dir1/bar.rb*
+   2|bar bar bar bar *Pikon* bar
+   9|bar bar *Pikon* bar bar bar
+
+END
+  end
+  
   it "-x means match only whole lines" do
     asterize_ansi(%x{rak Cap -x}).should == ""
     asterize_ansi(%x{rak "(foo )+Cap\\w+( foo)+" -x}).should == t=<<END
