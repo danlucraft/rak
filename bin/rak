@@ -2,7 +2,7 @@
 
 require 'rubygems'
 
-if RUBY_PLATFORM =~ /mswin/
+if RUBY_PLATFORM =~ /mswin|mingw/
   begin
     require 'win32console'
   rescue LoadError
