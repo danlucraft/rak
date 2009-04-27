@@ -20,8 +20,6 @@ rescue LoadError
   $use_onig = false
 end
 
-$use_onig = false
-
 class Rak
   VERSION = "0.9"
   
@@ -484,16 +482,20 @@ END
       rescue
         line = ""
       end
-      if line =~ /^#!/
-          if line =~ /\b(ruby|perl|php|python)\b/
-            return "."+FILE_TYPES[$1.intern].first
-          elsif line =~ /\b(bash|csh|ksh|zsh)\b/
-            return ".sh"
+      begin
+        if line =~ /^#!/
+            if line =~ /\b(ruby|perl|php|python)\b/
+              return "."+FILE_TYPES[$1.intern].first
+            elsif line =~ /\b(bash|csh|ksh|zsh)\b/
+              return ".sh"
+            end
+        else
+          if line =~ /\Q<?xml /
+            return ".xml"
           end
-      else
-        if line =~ /\Q<?xml /
-          return ".xml"
         end
+      rescue
+        return nil
       end
       return false
     end
@@ -515,6 +517,7 @@ END
     if opt[:match_line_ends]
       str = str + "$"
     end
+    str = str.gsub("~bang", "!").gsub("~ques", "?")
     if $use_onig
       if opt[:ignore_case]
         re = Oniguruma::ORegexp.new(str, :options => Oniguruma::OPTION_IGNORECASE)
@@ -557,6 +560,8 @@ END
     code << %{  end                             }
 
     code << %{  all = f.read                    }
+#     code << %{  p fn }
+#     code << %{  all =~ re rescue p all }
     code << %{  if all !~ re and not opt[:invert_match] and not opt[:print_entire_line_if_no_match]               }
                   if opt[:print_file_if_no_match]
     code << %{      if count == 0                                }
