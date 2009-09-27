@@ -678,7 +678,9 @@ END
                   if opt[:invert_match]
     code << %{      puts "\#{fn}:\#{i-count}"                                                 }
                   else       
-    code << %{      puts "\#{fn}:\#{count}"                                                 }
+    code << %{      if count > 0                                        }
+    code << %{        puts "\#{fn}:\#{count}"                           }
+    code << %{      end                                                 }
                   end
                 end
                 if opt[:print_file_if_match]

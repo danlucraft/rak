@@ -1,9 +1,9 @@
 rak
-    by Daniel Lucraft
-    http://rubyforge.org/projects/rak
+http://rubyforge.org/projects/rak
+Daniel Lucraft (http://danlucraft.com/blog/)
 
 == DESCRIPTION:
-  
+
 Replacement for grep. Recursively scans directories to match a given
 Ruby regular expression. Prints highlighted results.
 

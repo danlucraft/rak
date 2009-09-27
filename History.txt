@@ -1,4 +1,15 @@
 
+== 1.0 / 2009-09-27
+
+* MinGW is a valid Windows platform type.
+* Can use ~bang and ~ques in a regex and they will be turned into ! and ?
+  This is to get around bash.
+* Added -k negative file match option (Contributed by Juozas Gaigalas')
+* Added .cc and .hpp to the C++ file types
+* Added Vala file types
+* 20% faster on average
+* Moved to Github
+
 == 0.9 / 2008-02-03
 
 * Added .rake to ruby files
