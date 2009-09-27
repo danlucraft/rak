@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rak}
-  s.version = "0.9"
+  s.version = "1.0"
 
   s.authors = ["Daniel Lucraft"]
   s.date = %q{2008-02-03}
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://rak.rubyforge.org}
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{rak}
-  s.rubygems_version = %q{1.1.1}
+  s.rubygems_version = %q{1.3.0}
   s.summary = %q{A grep replacement in Ruby, type "rak pattern".}
 
 end
