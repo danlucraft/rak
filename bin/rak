@@ -651,8 +651,8 @@ END
     code << %{            prefix = "\#{i.to_s.rjust(4)}|"                                   }
                         else
                           if opt[:print_file_each_line]
-    code << %{              fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + " " : "")                            }
-    code << %{              prefix = fn_str + "\#{i.to_s.rjust(4)}|"                            }
+    code << %{              fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")                            }
+    code << %{              prefix = fn_str + "\#{i.to_s}:"                            }
                           else
     code << %{              prefix = ""                                                        }
                           end
