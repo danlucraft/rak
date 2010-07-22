@@ -485,15 +485,15 @@ END
       end
       begin
         if line =~ /^#!/
-            if line =~ /\b(ruby|perl|php|python)\b/
-              return FILE_TYPES[$1.intern].first
-            elsif line =~ /\b(bash|csh|ksh|zsh)\b/
-              return ".sh"
-            end
-        else
-          if line =~ /\Q<?xml /
-            return ".xml"
+          if line =~ /\b(ruby|perl|php|python|make)[0-9.]*\b/i
+            return FILE_TYPES[$1.downcase.intern].first
+          elsif line =~ /\b(sh|bash|csh|ksh|zsh)\b/
+            return ".sh"
+          else
+            return ".other"
           end
+        elsif line =~ /\Q<?xml /
+          return ".xml"
         end
       rescue
         return nil
