@@ -148,10 +148,9 @@ END
                             )
 
     opt[:max_count] = nil
-    opt[:do_search] = true
+    opt[:only_print_filelist] = false
     opt[:print_filename] = true
     opt[:print_line_number] = true
-    opt[:print_filelist] = false
     opt[:print_output] = nil
     opt[:print_highlighted] = true
     opt[:print_num_matches] = false
@@ -180,7 +179,7 @@ END
     
     # if redirected (RAK_TEST allows us to redirect in testing and still 
     # get the non-redirected defaults).
-    if STDOUT.isatty == false and ENV['RAK_TEST'] != "true"
+    unless STDOUT.isatty or ENV['RAK_TEST'] == "true"
       opt[:colour] = false
       opt[:print_file_each_line] = true
       opt[:print_filename] = false
@@ -200,8 +199,7 @@ END
         when '--max-count'
           opt[:max_count] = arg.to_i
         when '--files'
-          opt[:do_search] = false
-          opt[:print_filelist] = true
+          opt[:only_print_filelist] = true
         when '--output'
           opt[:print_filename] = false
           opt[:print_line_number] = false
@@ -315,74 +313,52 @@ END
       exit
     end
 
-    if ARGV.empty? and opt[:print_filelist] == false
-      puts USAGE_HELP
-      exit
-    end
-    
-    if opt[:do_search]
-      files = get_files(ARGV[1..-1])
-    else
-      files = get_files(ARGV)
-    end
-    
-    compile_match_file
-
     unless opt[:colour]
       FILE_COLOUR.replace ""
       CLEAR_COLOURS.replace ""
       MATCH_COLOUR.replace ""
     end
 
-    print_files(files)      if opt[:print_filelist]
-    search2(ARGV[0], files) if opt[:do_search]
-  end
-  
-  def self.print_files(files)
-    files.each do |fn|
-      puts fn
+    if opt[:only_print_filelist]
+      puts get_files(ARGV)
+    elsif ARGV.empty?
+      puts USAGE_HELP
+      exit
+    else
+      re = compile_pattern(ARGV.shift)
+      files = get_files(ARGV)
+      compile_match_file
+      file_separator=""
+      files.each do |fn|
+        match_file(re, fn, file_separator)
+      end
     end
   end
   
   def self.get_all_files(files=[], dir="./")
     Dir[dir+"*"].each do |fn|
       next if fn == ".."
+      next if File.symlink?(fn) and not opt[:follow_symlinks]
       if File.directory? fn
-        if opt[:descend] 
-          if File.symlink? fn
-            if opt[:follow_symlinks]
-              get_all_files(files, fn+"/")
-            end
-          else
-            get_all_files(files, fn+"/")
-          end
-        end
+        get_all_files(files, fn+"/") if opt[:descend]
       else
-        if !File.socket? fn and File.readable? fn
-          if File.symlink? fn
-            if opt[:follow_symlinks]
-              files << fn
-            end
-          else
-            files << fn
-          end
-        end
+        files << fn if File.readable?(fn) and not File.socket?(fn)
       end
     end
     files
   end
   
   def self.get_files(files_and_dirs)
-    types_files = FILE_TYPES.invert
-    types = types_files.keys.flatten
+    types = FILE_TYPES.values.flatten
     io_files = []
-    if !files_and_dirs or files_and_dirs.empty?
-      if STDIN.isatty == false
+    files_and_dirs ||= []
+    if files_and_dirs.empty?
+      if STDIN.isatty
+        files = get_all_files
+      else
         io_files << STDIN
         opt[:print_filename] = false
         files = []
-      else
-        files = get_all_files
       end
     else
       files = []
@@ -483,34 +459,30 @@ END
     
     files + io_files
   end
-  
+
+
   def self.shebang_matches(fn)
-    File.open(fn) do |f|
-      begin
-        line = f.readline
-      rescue
-        line = ""
-      end
-      begin
-        if line =~ /^#!/
-          if line =~ /\b(ruby|perl|php|python|make)[0-9.]*\b/i
-            return FILE_TYPES[$1.downcase.intern].first
-          elsif line =~ /\b(sh|bash|csh|ksh|zsh)\b/
-            return ".sh"
-          else
-            return ".other"
-          end
-        elsif line =~ /^<\?xml\b/
-          return ".xml"
+    begin
+      line = File.open(fn).readline
+      if line =~ /^#!/
+        if line =~ /\b(ruby|perl|php|python|make)[0-9.]*\b/i
+          FILE_TYPES[$1.downcase.intern].first
+        elsif line =~ /\b(sh|bash|csh|ksh|zsh)\b/
+          ".sh"
+        else
+          ".other"
         end
-      rescue
-        return nil
+      elsif line =~ /^<\?xml\b/
+        ".xml"
+      else
+        false
       end
-      return false
+    rescue
+      nil
     end
   end
     
-  def self.search2(str, files)
+  def self.compile_pattern(str)
     if opt[:literal]
       str = Regexp.quote(str)
     end
@@ -528,21 +500,11 @@ END
     end
     str = str.gsub("~bang", "!").gsub("~ques", "?")
     if $use_onig
-      if opt[:ignore_case]
-        re = Oniguruma::ORegexp.new(str, :options => Oniguruma::OPTION_IGNORECASE)
-      else
-        re = Oniguruma::ORegexp.new(str)
-      end
+      flags = opt[:ignore_case] ? Oniguruma::OPTION_IGNORECASE : nil
+      Oniguruma::ORegexp.new(str, :options => flags)
     else
-      if opt[:ignore_case]
-        re = Regexp.new(str, Regexp::IGNORECASE)
-      else
-        re = Regexp.new(str)
-      end
-    end
-    file_separator=""
-    files.each do |fn|
-      match_file(re, fn, file_separator)
+      flags = opt[:ignore_case] ? Regexp::IGNORECASE : nil
+      Regexp.new(str, flags)
     end
   end
   
