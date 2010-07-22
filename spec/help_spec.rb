@@ -45,6 +45,6 @@ END
     t=<<END
 rak: see rak --help for usage.
 END
-    %x{rak foo --asfdasfd}.include?(t).should be_true
+    %x{rak foo --asfdasfd 2>/dev/null}.include?(t).should be_true
   end
 end

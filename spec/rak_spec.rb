@@ -5,18 +5,6 @@ require 'rbconfig'
 require File.dirname(__FILE__) + "/spec_helpers"
 
 describe "Rak", "with no options" do 
-  before(:all) do
-    ENV['RAK_TEST'] = "true"
-  end
-  
-  before(:each) do
-    FileUtils.cd(HERE+"/example/")
-  end
-  
-  after(:all) do
-    ENV['RAK_TEST'] = "false"
-  end
-  
   it "prints all matches from files in the current directory" do
     asterize_ansi(rak "Cap.ic").should == t=<<END
 *foo.rb*
@@ -45,6 +33,7 @@ END
 *dir1/bar.rb*
    2|bar bar bar bar *Pikon* bar
    9|bar bar *Pikon* bar bar bar
+
 *foo.rb*
    6|foo foo foo foo foo *Pikon* foo foo
    8|foo *Pikon* foo foo foo foo foo foo
@@ -70,12 +59,10 @@ END
   end
   
   it "changes defaults when redirected" do
-    ENV['RAK_TEST'] = "false"
-    asterize_ansi(rak "Six | cat").should == t=<<END
+    asterize_ansi(rak("Six | cat", :test_mode => false)).should == t=<<END
 foo.rb:10:foo foo Six foo foo foo Six foo
 foo.rb:11:foo foo foo foo Six foo foo foo
 END
-    ENV['RAK_TEST'] = "true"
   end
 
   it "searches shebangs for valid inputs" do
@@ -90,19 +77,12 @@ END
     asterize_ansi(rak "Canceron").should == t=<<END
 *Rakefile*
    1|rakefile rakefile *Canceron* rakefile
+
 END
   end
 end
 
 describe "Rak", "with FILE or STDIN inputs" do
-  before(:all) do
-    ENV['RAK_TEST'] = "true"
-  end
-  
-  after(:all) do
-    ENV['RAK_TEST'] = "false"
-  end
-  
   it "should only search in given files or directories" do
     asterize_ansi(rak "Pikon foo.rb").should == t=<<END
    6|foo foo foo foo foo *Pikon* foo foo
@@ -112,31 +92,24 @@ END
 dir1/bar.rb
    2|bar bar bar bar Pikon bar
    9|bar bar Pikon bar bar bar
+
 END
   end
   
   it "should search in STDIN by default if no files are specified" do
-    asterize_ansi(%x{cat _darcs/baz.rb | #{rak_bin} Aere}).should == t=<<END
+    asterize_ansi(rak "Aere", :pipe => "cat _darcs/baz.rb").should == t=<<END
    2|baz baz baz *Aere*lon baz baz baz
 END
   end
   
   it "only searches STDIN when piped to" do
-    asterize_ansi(%x{echo asdfCapasdf | #{rak_bin} Cap}).should == t=<<END
+    asterize_ansi(rak "Cap", :pipe => "echo asdfCapasdf").should == t=<<END
    1|asdf*Cap*asdf
 END
   end
 end
 
 describe "Rak", "options" do
-  before(:all) do
-    ENV['RAK_TEST'] = "true"
-  end
-  
-  after(:all) do
-    ENV['RAK_TEST'] = "false"
-  end
-  
   it "prints only files with --files" do
     t=<<END
 Rakefile
@@ -325,6 +298,7 @@ END
     asterize_ansi(rak "Libris -a").should == t=<<END
 *qux*
    1|qux qux qux *Libris* qux qux qux
+
 END
     
   end
@@ -463,6 +437,7 @@ END
 *dir1/bar.rb*
    2|bar bar bar bar *Pikon* bar
    9|bar bar *Pikon* bar bar bar
+
 END
   end
   
@@ -493,25 +468,12 @@ END
   end
   
   it "should not recurse down '..' when used with . " do
-    FileUtils.cd(HERE+"/example/dir1/")
-    asterize_ansi(rak "foo .").should == t=<<END
+    asterize_ansi(rak("foo .", :dir=>HERE+"example/dir1")).should == t=<<END
 END
   end
 end
 
 describe "Rak", "with combinations of options" do
-  before(:all) do
-    ENV['RAK_TEST'] = "true"
-  end
-  
-  before(:each)do 
-    FileUtils.cd(HERE+"/example/")
-  end
-  
-  after(:all) do
-    ENV['RAK_TEST'] = "false"
-  end
-  
   it "should process -c -v " do
     t1=<<END
 quux.py:1
@@ -524,18 +486,11 @@ END
   end
 
   it "-h and redirection" do
-    ENV['RAK_TEST'] = "false"
-    (rak "Pik -h | cat").should == t=<<END
+    (rak("Pik -h | cat", :test_mode => false)).should == t=<<END
 bar bar bar bar Pikon bar
 bar bar Pikon bar bar bar
 foo foo foo foo foo Pikon foo foo
 foo Pikon foo foo foo foo foo foo
 END
-    ENV['RAK_TEST'] = "true"
   end
 end
-
-
-
-
-
