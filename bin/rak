@@ -486,7 +486,7 @@ END
       begin
         if line =~ /^#!/
             if line =~ /\b(ruby|perl|php|python)\b/
-              return "."+FILE_TYPES[$1.intern].first
+              return FILE_TYPES[$1.intern].first
             elsif line =~ /\b(bash|csh|ksh|zsh)\b/
               return ".sh"
             end
