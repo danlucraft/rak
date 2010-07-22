@@ -139,8 +139,6 @@ END
                             [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ]
                             )
 
-    dir = nil
-    
     opt[:max_count] = nil
     opt[:do_search] = true
     opt[:print_filename] = true
@@ -314,7 +312,11 @@ END
       exit
     end
     
-    files = get_files
+    if opt[:do_search]
+      files = get_files(ARGV[1..-1])
+    else
+      files = get_files(ARGV)
+    end
     
     compile_match_file
 
@@ -362,10 +364,9 @@ END
     files
   end
   
-  def self.get_files(dir="./")
+  def self.get_files(files_and_dirs)
     types_files = FILE_TYPES.invert
     types = types_files.keys.flatten
-    files_and_dirs = ARGV[1..-1]
     io_files = []
     if !files_and_dirs or files_and_dirs.empty?
       if STDIN.isatty == false
