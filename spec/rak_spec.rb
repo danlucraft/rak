@@ -9,7 +9,7 @@ describe "Rak", "with no options" do
     ENV['RAK_TEST'] = "true"
   end
   
-  before(:each)do
+  before(:each) do
     FileUtils.cd(HERE+"/example/")
   end
   
@@ -45,7 +45,6 @@ END
 *dir1/bar.rb*
    2|bar bar bar bar *Pikon* bar
    9|bar bar *Pikon* bar bar bar
-
 *foo.rb*
    6|foo foo foo foo foo *Pikon* foo foo
    8|foo *Pikon* foo foo foo foo foo foo
@@ -91,7 +90,6 @@ END
     asterize_ansi(rak "Canceron").should == t=<<END
 *Rakefile*
    1|rakefile rakefile *Canceron* rakefile
-
 END
   end
 end
@@ -114,7 +112,6 @@ END
 dir1/bar.rb
    2|bar bar bar bar Pikon bar
    9|bar bar Pikon bar bar bar
-
 END
   end
   
@@ -328,7 +325,6 @@ END
     asterize_ansi(rak "Libris -a").should == t=<<END
 *qux*
    1|qux qux qux *Libris* qux qux qux
-
 END
     
   end
@@ -467,7 +463,6 @@ END
 *dir1/bar.rb*
    2|bar bar bar bar *Pikon* bar
    9|bar bar *Pikon* bar bar bar
-
 END
   end
   
