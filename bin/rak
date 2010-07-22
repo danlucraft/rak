@@ -20,6 +20,14 @@ rescue LoadError
   $use_onig = false
 end
 
+class String
+  def expand_tabs(shift=0)
+    expanded = dup
+    1 while expanded.sub!(/\t+/){ " "*($&.size*8 - ($`.size+shift)%8) }
+    expanded
+  end
+end
+
 class Rak
   VERSION = "0.9"
   
@@ -139,8 +147,6 @@ END
                             [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ]
                             )
 
-    dir = nil
-    
     opt[:max_count] = nil
     opt[:do_search] = true
     opt[:print_filename] = true
@@ -314,7 +320,11 @@ END
       exit
     end
     
-    files = get_files
+    if opt[:do_search]
+      files = get_files(ARGV[1..-1])
+    else
+      files = get_files(ARGV)
+    end
     
     compile_match_file
 
@@ -362,10 +372,9 @@ END
     files
   end
   
-  def self.get_files(dir="./")
+  def self.get_files(files_and_dirs)
     types_files = FILE_TYPES.invert
     types = types_files.keys.flatten
-    files_and_dirs = ARGV[1..-1]
     io_files = []
     if !files_and_dirs or files_and_dirs.empty?
       if STDIN.isatty == false
@@ -484,15 +493,15 @@ END
       end
       begin
         if line =~ /^#!/
-            if line =~ /\b(ruby|perl|php|python)\b/
-              return "."+FILE_TYPES[$1.intern].first
-            elsif line =~ /\b(bash|csh|ksh|zsh)\b/
-              return ".sh"
-            end
-        else
-          if line =~ /\Q<?xml /
-            return ".xml"
+          if line =~ /\b(ruby|perl|php|python|make)[0-9.]*\b/i
+            return FILE_TYPES[$1.downcase.intern].first
+          elsif line =~ /\b(sh|bash|csh|ksh|zsh)\b/
+            return ".sh"
+          else
+            return ".other"
           end
+        elsif line =~ /^<\?xml\b/
+          return ".xml"
         end
       rescue
         return nil
@@ -573,19 +582,15 @@ END
   
     code << %{  all.each_line do |line|                                          }
     code << %{    i += 1                                                         }
-    code << %{    rest = line                                                      }
-    code << %{    while md = re.match(rest)                                   }
-    code << %{      rest = md.post_match                                          }
-                    if opt[:print_output]
-    code << %{        matches << eval(opt[:print_output])                            }
-                    else
-    code << %{        matches << md                                               }
-                    end
-                    if opt[:print_match]
-    code << %{        puts md.to_s                                               }
-                    end
-    code << %{      count += 1                                                      }
-    code << %{    end                                                             }
+                  if opt[:print_output]
+    code << %{      line.scan(re){ matches << eval(opt[:print_output]) }                        }
+                  else
+    code << %{      line.scan(re){ matches << $~  }                                           }
+                  end
+                  if opt[:print_match]
+    code << %{      matches.each{|md| puts md.to_s  }                                            }
+                  end
+    code << %{    count += matches.size                                                  }
                   if opt[:invert_match]
                     if opt[:print_filename] 
     code << %{        unless displayed_filename                                   }
@@ -598,7 +603,7 @@ END
                         if opt[:print_line_number]
     code << %{            print "\#{i.to_s.rjust(4)}|"                            }
                         end
-    code << %{          puts "\#{line}"                                          }
+    code << %{          puts "\#{line.expand_tabs}"                                    }
                       end
     code << %{      end                                                               }
     code << %{      matches.clear                                                   }
@@ -622,7 +627,7 @@ END
                             if opt[:print_line_number]
     code << %{                print "\#{i.to_s.rjust(4)}|"                            }
                             end
-    code << %{              puts "\#{line}"                                          }
+    code << %{              puts "\#{line.expand_tabs}"                                }
     code << %{            end                                                        }
                         end
                       end
@@ -639,7 +644,7 @@ END
                           if opt[:print_line_number]
     code << %{              print "\#{before_i.to_s.rjust(4)}|"                            }
                           end
-    code << %{            puts before_line                                                 }
+    code << %{            puts before_line.expand_tabs                                     }
     code << %{          end                                                               }
     code << %{          before_context = []                                                 }
                       end       
@@ -699,24 +704,17 @@ END
   end
   
   def self.print_highlighted(prefix, line, matches)
-    from1 = matches[0].begin(0)
-    pre = ""
-    pre = line[0..(from1-1)] if from1 > 0
     print prefix
-    print pre
-    ptr = 0
-    0.upto(matches.length-1) do |n|
-      from = matches[n].begin(0)
-      to   = matches[n].end(0)
-      print MATCH_COLOUR +
-        line[(from+ptr)..(to+ptr-1)] +
-        CLEAR_COLOURS
-      ptr += to
-      if n == matches.length - 1
-        puts matches.last.post_match
-      else
-        print line[ptr..(matches[n+1].begin(0)-1+ptr)]
-      end
+    matches = matches.map{|md| md.offset(0)}
+    cuts = [0, matches, line.size].flatten
+    column = 0
+    0.upto(cuts.size-2) do |i|
+      part = line[cuts[i]...cuts[i+1]]
+      part = part.expand_tabs(column)
+      column += part.size
+      print MATCH_COLOUR if i%2 == 1
+      print part
+      print CLEAR_COLOURS if i%2 == 1
     end
   end
   
