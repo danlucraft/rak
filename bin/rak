@@ -29,7 +29,7 @@ class String
 end
 
 class Rak
-  VERSION = "0.9"
+  VERSION = "1.1"
   
   FILE_COLOUR = "\033[1;31m"
   MATCH_COLOUR = "\033[1;37m\033[41m"
