@@ -500,7 +500,7 @@ END
           else
             return ".other"
           end
-        elsif line =~ /\Q<?xml /
+        elsif line =~ /^<\?xml\b/
           return ".xml"
         end
       rescue
