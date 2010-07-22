@@ -716,6 +716,7 @@ END
       print part
       print CLEAR_COLOURS if i%2 == 1
     end
+    print "\n" unless line[-1,1] == "\n"
   end
   
   def self.unknown_type(type)
