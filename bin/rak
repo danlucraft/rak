@@ -515,16 +515,16 @@ END
       str = Regexp.quote(str)
     end
     if opt[:match_whole_words]
-      str = "\\b" + str + "\\b"
+      str = "\\b(?:" + str + ")\\b"
     end
     if opt[:match_whole_lines]
-      str = "^" + str + "$"
+      str = "^(?:" + str + ")$"
     end
     if opt[:match_line_starts]
-      str = "^" + str
+      str = "^(?:" + str + ")"
     end
     if opt[:match_line_ends]
-      str = str + "$"
+      str = "(?:" + str + ")$"
     end
     str = str.gsub("~bang", "!").gsub("~ques", "?")
     if $use_onig

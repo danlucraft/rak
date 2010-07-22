@@ -228,7 +228,7 @@ END
   end
   
   it "matches whole words only with -w" do
-    strip_ansi(rak "Cap -w").should == ""
+    strip_ansi(rak "'Cap|Hat' -w").should == ""
   end
   
    it "prints the file on each line with --nogroup" do
@@ -443,7 +443,8 @@ END
   
   it "-x means match only whole lines" do
     asterize_ansi(rak "Cap -x").should == ""
-    asterize_ansi(rak "\"(foo )+Cap\\w+( foo)+\" -x").should == t=<<END
+    asterize_ansi(rak '"foo|goo" -x').should == ""
+    asterize_ansi(rak '"(foo )+Cap\w+( foo)+" -x').should == t=<<END
 *foo.rb*
    3|*foo foo foo Caprica foo foo foo*
    4|*foo Capsicum foo foo foo foo foo*
@@ -452,7 +453,7 @@ END
   end
 
   it "-s means match only at the start of a line" do
-    asterize_ansi(rak "-s \"foo Cap\"").should == t=<<END
+    asterize_ansi(rak '-s "foo Cap|Aquaria"').should == t=<<END
 *foo.rb*
    4|*foo Cap*sicum foo foo foo foo foo
 
@@ -460,7 +461,7 @@ END
   end
 
   it "-e means match only at the end of a line" do
-    asterize_ansi(rak "-e \"kon foo foo\"").should == t=<<END
+    asterize_ansi(rak '-e "Aquaria|kon foo foo"').should == t=<<END
 *foo.rb*
    6|foo foo foo foo foo Pi*kon foo foo*
 
