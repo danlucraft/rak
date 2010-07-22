@@ -10,7 +10,6 @@ describe "Rak", "with no options" do
 *foo.rb*
    3|foo foo foo *Capric*a foo foo foo
    4|foo *Capsic*um foo foo foo foo foo
-
 END
   end
   
@@ -24,7 +23,6 @@ foo.rb
   10|foo foo Six foo foo foo Six foo
   11|foo foo foo foo Six foo foo foo
   13|foo foo foo Gemenon foo foo foo
-
 END
   end
 
@@ -37,7 +35,6 @@ END
 *foo.rb*
    6|foo foo foo foo foo *Pikon* foo foo
    8|foo *Pikon* foo foo foo foo foo foo
-
 END
   end
   
@@ -46,7 +43,6 @@ END
 *foo.rb*
   10|foo foo *Six* foo foo foo *Six* foo
   11|foo foo foo foo *Six* foo foo foo
-
 END
   end
   
@@ -69,7 +65,6 @@ END
     asterize_ansi(rak "Aquaria").should == t=<<END
 *shebang*
    3|goo goo goo *Aquaria* goo goo
-
 END
   end
   
@@ -77,7 +72,6 @@ END
     asterize_ansi(rak "Canceron").should == t=<<END
 *Rakefile*
    1|rakefile rakefile *Canceron* rakefile
-
 END
   end
 end
@@ -92,7 +86,6 @@ END
 dir1/bar.rb
    2|bar bar bar bar Pikon bar
    9|bar bar Pikon bar bar bar
-
 END
   end
   
@@ -125,7 +118,6 @@ END
     strip_ansi(rak "Cap.ic -m 1").should == t=<<END
 foo.rb
    3|foo foo foo Caprica foo foo foo
-
 END
   end
   
@@ -158,7 +150,6 @@ END
 foo.rb
   10|foo foo Six foo foo foo Six foo
   11|foo foo foo foo Six foo foo foo
-
 END
   end
   
@@ -204,7 +195,7 @@ END
     r.include?(t2).should be_true
     r.include?(t3).should be_true
     r.include?(t4).should be_true
-    r.split("\n").length.should == 26
+    r.split("\n").length.should == 29
   end
   
   it "doesn't descend into subdirs with -n" do
@@ -212,7 +203,6 @@ END
 foo.rb
    6|foo foo foo foo foo Pikon foo foo
    8|foo Pikon foo foo foo foo foo foo
-
 END
   end
   
@@ -290,7 +280,6 @@ END
 foo.rb
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
-
 END
   end
   
@@ -298,7 +287,6 @@ END
     asterize_ansi(rak "Libris -a").should == t=<<END
 *qux*
    1|qux qux qux *Libris* qux qux qux
-
 END
     
   end
@@ -344,7 +332,6 @@ corge.rb
 
 ln_dir/corge.rb
    1|corge corge corge Sagitarron corge
-
 END
   end
   
@@ -354,7 +341,6 @@ foo.rb
    4|foo Capsicum foo foo foo foo foo
    5|
    6|foo foo foo foo foo Pikon foo foo
-
 END
   end
   
@@ -372,7 +358,6 @@ foo.rb
   11|foo foo foo foo Six foo foo foo
   12|
   13|foo foo foo Gemenon foo foo foo
-
 END
   end
   
@@ -382,7 +367,6 @@ foo.rb
    2|
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
-
 END
   end
   
@@ -394,7 +378,6 @@ foo.rb
    4|foo Capsicum foo foo foo foo foo
    5|
    6|foo foo foo foo foo Pikon foo foo
-
 END
   end
   
@@ -404,7 +387,6 @@ foo.rb
    3|foo foo foo Caprica foo foo foo
    4|foo Capsicum foo foo foo foo foo
    5|
-
 END
   end
   
@@ -418,7 +400,6 @@ foo.rb
    8|foo Pikon foo foo foo foo foo foo
    9|
   10|foo foo Six foo foo foo Six foo
-
 END
   end
 
@@ -427,7 +408,6 @@ END
 *foo.rb*
    6|foo foo foo foo foo *Pikon* foo foo
    8|foo *Pikon* foo foo foo foo foo foo
-
 END
 
   end
@@ -437,7 +417,6 @@ END
 *dir1/bar.rb*
    2|bar bar bar bar *Pikon* bar
    9|bar bar *Pikon* bar bar bar
-
 END
   end
   
@@ -448,7 +427,6 @@ END
 *foo.rb*
    3|*foo foo foo Caprica foo foo foo*
    4|*foo Capsicum foo foo foo foo foo*
-
 END
   end
 
@@ -456,7 +434,6 @@ END
     asterize_ansi(rak '-s "foo Cap|Aquaria"').should == t=<<END
 *foo.rb*
    4|*foo Cap*sicum foo foo foo foo foo
-
 END
   end
 
@@ -464,7 +441,6 @@ END
     asterize_ansi(rak '-e "Aquaria|kon foo foo"').should == t=<<END
 *foo.rb*
    6|foo foo foo foo foo Pi*kon foo foo*
-
 END
   end
   

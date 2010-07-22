@@ -540,8 +540,9 @@ END
         re = Regexp.new(str)
       end
     end
-    files.each do |fn| 
-      match_file(re, fn)
+    file_separator=""
+    files.each do |fn|
+      match_file(re, fn, file_separator)
     end
   end
   
@@ -551,7 +552,7 @@ END
   # the alternative.
   def self.compile_match_file
     code = []
-    code << %{def self.match_file(re, fn)        }
+    code << %{def self.match_file(re, fn, file_separator)        }
     code << %{  displayed_filename = false       }
     code << %{  count = 0                        }
     code << %{  i = 0                            }
@@ -594,6 +595,8 @@ END
                   if opt[:invert_match]
                     if opt[:print_filename] 
     code << %{        unless displayed_filename                                   }
+    code << %{          print file_separator                           }
+    code << %{          file_separator.replace("\\n")                             }
     code << %{          puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
     code << %{          displayed_filename = true                                   }
     code << %{        end                                                               }
@@ -635,6 +638,8 @@ END
     code << %{        print_num = opt[:after_context]                                          }
                       if opt[:print_filename]
     code << %{          unless displayed_filename                                          }
+    code << %{            print file_separator                           }
+    code << %{            file_separator.replace("\\n")                             }
     code << %{            puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
     code << %{            displayed_filename = true                                          }
     code << %{          end                                                               }
@@ -673,11 +678,6 @@ END
     code << %{      matches.clear                                                        }
                   end
     code << %{  end                                                                      }
-                if opt[:print_highlighted] and opt[:print_filename]
-    code << %{    if count > 0                                                               }
-    code << %{      puts                                                                      }
-    code << %{    end                                                                      }
-                end
     code << %{  f.close if f === File                                                        }
                 if opt[:print_num_matches]
                   if opt[:invert_match]
