@@ -100,6 +100,10 @@ END
    1|asdf*Cap*asdf
 END
   end
+
+  it "should either match on rax x or rak -v x" do
+    (rak('"\A.{0,100}\Z" dir1/bar.rb').length + rak('-v "\A.{0,100}\Z" dir1/bar.rb').length).should > 0
+  end
 end
 
 describe "Rak", "options" do

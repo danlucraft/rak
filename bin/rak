@@ -568,20 +568,8 @@ END
     code << %{  elsif fn.is_a? IO               }
     code << %{    f = fn                        }
     code << %{  end                             }
-
-    code << %{  all = f.read                    }
-#     code << %{  p fn }
-#     code << %{  all =~ re rescue p all }
-    code << %{  if all !~ re and not opt[:invert_match] and not opt[:print_entire_line_if_no_match]               }
-                  if opt[:print_file_if_no_match]
-    code << %{      if count == 0                                }
-    code << %{        puts fn                                     }
-    code << %{      end                                 }
-                  end
-    code << %{    return                     }
-    code << %{  end                   }
   
-    code << %{  all.each_line do |line|                                          }
+    code << %{  f.each_line do |line|                                          }
     code << %{    i += 1                                                         }
                   if opt[:print_output]
     code << %{      line.scan(re){ matches << eval(opt[:print_output]) }                        }
@@ -619,8 +607,8 @@ END
                         if opt[:before_context] > 0 
     code << %{            if print_num == 0                                                 }
     code << %{              before_context << [i, line]                                   }
-    code << %{              if before_context.length == before_context_size+1                            }
-    code << %{                before_context = before_context[1..-1]                            }
+    code << %{              if before_context.length > before_context_size                            }
+    code << %{                before_context.shift                                        }
     code << %{              end                                                               }
     code << %{            end                                                               }
                         end
