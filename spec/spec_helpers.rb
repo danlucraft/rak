@@ -2,6 +2,7 @@ require 'fileutils'
 require "pathname"
 
 HERE = Pathname(__FILE__).parent.expand_path
+require(HERE.join("../lib/rak"))
 
 def strip_ansi(str)
   str.gsub /\033\[(\d;)?\d+m/, ""
@@ -18,7 +19,7 @@ def ruby_bin
   )
 end
 
-def rak(argstring, opts={})
+def rak(argstring="", opts={})
   begin
     bin_rak = HERE.parent.join("bin/rak")
     cmd = "#{ruby_bin} #{bin_rak} #{argstring}"
