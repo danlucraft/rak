@@ -88,6 +88,14 @@ END
     attr_reader :opt
   end
   
+  def self.compile_regexp(str)
+    if $use_onig
+      Oniguruma::ORegexp.new(str)
+    else
+      Regexp.new(str)
+    end
+  end
+  
   def self.search
     @opt = {}
 
@@ -295,9 +303,9 @@ END
           opt[:before_context] = val
           opt[:after_context] = val
         when '-g'
-          opt[:filename_regex] = arg
+          opt[:filename_regex] = compile_regexp(arg)
         when '-k'
-          opt[:neg_filename_regex] = arg
+          opt[:neg_filename_regex] = compile_regexp(arg)
         when '-x'
           opt[:match_whole_lines] = true
         when '-s'
@@ -320,146 +328,94 @@ END
     end
 
     if opt[:only_print_filelist]
-      puts get_files(ARGV)
+      each_file(ARGV) do |fn|
+        puts fn
+      end
     elsif ARGV.empty?
       puts USAGE_HELP
       exit
     else
       re = compile_pattern(ARGV.shift)
-      files = get_files(ARGV)
-      compile_match_file
-      file_separator=""
-      files.each do |fn|
+      compiled = false
+      file_separator = ""
+      each_file(ARGV) do |fn|
+        # each_file might turn off printing file name, but only before first yield
+        unless compiled
+          compile_match_file
+          compiled = true
+        end
         match_file(re, fn, file_separator)
       end
     end
   end
   
-  def self.get_all_files(files=[], dir="./")
-    Dir[dir+"*"].each do |fn|
-      next if fn == ".."
-      next if File.symlink?(fn) and not opt[:follow_symlinks]
-      if File.directory? fn
-        get_all_files(files, fn+"/") if opt[:descend]
-      else
-        files << fn if File.readable?(fn) and not File.socket?(fn)
-      end
-    end
-    files
-  end
-  
-  def self.get_files(files_and_dirs)
-    types = FILE_TYPES.values.flatten
-    io_files = []
-    files_and_dirs ||= []
-    if files_and_dirs.empty?
-      if STDIN.isatty
-        files = get_all_files
-      else
-        io_files << STDIN
-        opt[:print_filename] = false
-        files = []
-      end
-    else
-      files = []
-      files_and_dirs.each do |thing|
-        if File.file? thing
-          files << thing
-        end
-        if File.directory? thing
-          get_all_files(files, thing)
-        end
-      end
-      if files_and_dirs.length == 1 and 
-          File.file? files_and_dirs[0]
-        opt[:print_filename] = false
-      end
-    end
-    
-    # strip out based on extension
-    shebang_files = []
-    unless opt[:all_files]
-      files = files.select do |fn|
-        fn[-1..-1] != "~" and
-          fn[-1..-1] != "#"
-      end
-      new_files = []
-      files.each do |fn|
-        if types.any? {|ext| File.extname(fn) == ext or fn.split("/").last == ext}
-          new_files << fn
-        elsif ext = shebang_matches(fn)
-          shebang_files << [fn, ext]
-        end
-      end
-      files = new_files
-    end
-    
-    # select based on file type
-    if not opt[:includes].empty?
-      files = files.select do |fn|
-        opt[:includes].any? {|ext| fn.include? ext}
-      end
-      shebang_files2 = []
-      shebang_files.each do |fn, ext|
-        if opt[:includes].include? ext
-          shebang_files2 << [fn, ext]
-        end
-      end
-    else
-      shebang_files2 = shebang_files
-    end
-    
-    if not opt[:excludes].empty?
-      files = files.select do |fn|
-        not opt[:excludes].any? {|ext| fn.include? ext}
-      end
-      shebang_files3 = []
-      shebang_files2.each do |fn, ext|
-        unless opt[:excludes].any? {|ext| fn.include? ext}
-          shebang_files3 << [fn, ext]
-        end
-      end
-    else
-      shebang_files3 = shebang_files2
-    end
-    
-    files += shebang_files3.map {|fn, ext| fn}
-    
-    # reject version control dirs
-    files.reject! do |fn|
-      VC_DIRS.any? {|vc| fn.include? vc}
-    end
-    
-    # filter based on -g=REGEX
-    if opt[:filename_regex]
-      if $use_onig
-        fn_re = Oniguruma::ORegexp.new(opt[:filename_regex])
-      else
-        fn_re = Regexp.new(opt[:filename_regex])
-      end
-      files = files.select {|fn| fn =~ fn_re }
-    end
-    
-    # filter based on -k=REGEX
-    if opt[:neg_filename_regex]
-      if $use_onig
-        fn_re = Oniguruma::ORegexp.new(opt[:neg_filename_regex])
-      else
-        fn_re = Regexp.new(opt[:neg_filename_regex])
-      end
-      files = files.reject {|fn| fn =~ fn_re }
-    end
-    
-    # remove the "./"
-    files.map! {|fn| fn[0..1] == "./" ? fn[2..-1] : fn}
-    
-    if opt[:sort_files]
-      files = files.sort_by {|fn| fn.downcase}
-    end
-    
-    files + io_files
+  def self.extension_regexp(extensions)
+    return nil if extensions.empty?
+    Regexp.compile('(?:' + extensions.map{|x| Regexp.escape(x)}.join("|") + ')\z')
   end
 
+  def self.file_relevant?(fn)
+    # These don't change at this point
+    @types_rx    ||= extension_regexp(FILE_TYPES.values.flatten)
+    @includes_rx ||= extension_regexp(opt[:includes])
+    @excludes_rx ||= extension_regexp(opt[:excludes])
+
+    ext = File.basename(fn)
+    ext = shebang_matches(fn) unless ext =~ @types_rx
+
+    return false if !opt[:all_files]         and !ext or fn =~ /[~#]\z/
+    return false if @includes_rx             and (ext||"") !~ @includes_rx
+    return false if @excludes_rx             and (ext||"") =~ @excludes_rx
+    return false if opt[:filename_regex]     and fn  !~ opt[:filename_regex]
+    return false if opt[:neg_filename_regex] and fn  =~ opt[:neg_filename_regex]
+    return true
+  end
+
+  def self.find_all_files(path, &blk)
+    return if File.symlink?(path) and not opt[:follow_symlinks]
+    return if File.socket?(path)
+    return unless File.readable?(path)
+
+    if File.file?(path)
+      return unless file_relevant?(path)
+      yield(path.sub(/\A\.\/+/, "").gsub(/\/+/, "/"))
+    elsif File.directory?(path)
+      Dir["#{path}/*"].each do |fn|
+        next if VC_DIRS.any?{|vc| vc == File.basename(fn)}
+        next if File.directory?(fn) and not opt[:descend]
+        find_all_files(fn, &blk)
+      end
+    end
+  end
+
+  # It's really asking for Pathname...
+  def self.each_file(todo, &blk)
+    if todo.empty?
+      if STDIN.isatty
+        todo = ["."]
+      else
+        opt[:print_filename] = false
+        yield(STDIN)
+        return
+      end
+    elsif todo.size == 1 and File.file?(todo[0])
+      opt[:print_filename] = false
+    end
+    
+    if opt[:sort_files]
+      sortme = []
+      todo.each do |item|
+        find_all_files(item) do |fn|
+          sortme << fn
+        end
+      end
+      sortme.sort_by{|fn|fn.downcase}.each(&blk)
+    else
+      todo.each do |item|
+        find_all_files(item, &blk)
+      end
+    end
+  end
 
   def self.shebang_matches(fn)
     begin
