@@ -372,7 +372,6 @@ END
   end
 
   def self.find_all_files(path, &blk)
-    return if File.symlink?(path) and not opt[:follow_symlinks]
     return if File.socket?(path)
     return unless File.readable?(path)
 
@@ -383,6 +382,7 @@ END
       Dir["#{path}/*"].each do |fn|
         next if VC_DIRS.any?{|vc| vc == File.basename(fn)}
         next if File.directory?(fn) and not opt[:descend]
+        next if File.symlink?(fn) and not opt[:follow_symlinks]
         find_all_files(fn, &blk)
       end
     end
