@@ -202,6 +202,9 @@ END
             puts USAGE_HELP
           elsif arg == "types" or arg == "type"
             puts TYPES_HELP
+            FILE_TYPES.sort_by{|type,exts| type.to_s}.each do |type, exts|
+              puts "    --[no]%-13s %s\n" % [type, exts.join(" ")]
+            end
           end
           exit
         when '--max-count'
@@ -715,41 +718,6 @@ format.  For example, both --type=ruby and --ruby work.
 Note that some extensions may appear in multiple types.  For example,
 .pod files are both Perl and Parrot.
 
-    --[no]asm       .s
-    --[no]cc        .c .h .xs
-    --[no]cpp       .cpp .m .h
-    --[no]csharp    .cs
-    --[no]css       .css
-    --[no]elisp     .el
-    --[no]erlang    .erl
-    --[no]fortran   .f .f77 .f90 .f95 .f03 .for .ftn .fpp
-    --[no]haskell   .hs .lhs
-    --[no]hh        .h
-    --[no]html      .htm .html .shtml
-    --[no]java      .java .properties
-    --[no]js        .js
-    --[no]jsp       .jsp .jspx .jhtm .jhtml
-    --[no]lisp      .lisp
-    --[no]make      Makefile
-    --[no]mason     .mas .mhtml .mpl .mtxt
-    --[no]ocaml     .ml .mli
-    --[no]parrot    .pir .pasm .pmc .ops .pod .pg .tg
-    --[no]perl      .pl .pm .pod .t
-    --[no]php       .php .phpt .php3 .php4 .php5
-    --[no]prolog    .pl .ecl
-    --[no]python    .py
-    --[no]ruby      .rb .rhtml .rjs .rxml Rakefile .rake .erb .haml
-    --[no]scheme    .scm
-    --[no]shell     .sh .bash .csh .ksh .zsh
-    --[no]sql       .sql .ctl
-    --[no]tcl       .tcl
-    --[no]tex       .tex .cls .sty
-    --[no]text      .txt .text
-    --[no]tt        .tt .tt2 .ttml
-    --[no]vb        .bas .cls .frm .ctl .vb .resx
-    --[no]vim       .vim
-    --[no]xml       .xml .dtd .xslt
-    --[no]yaml      .yaml .yml
 END
 
 Rak.search
