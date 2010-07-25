@@ -85,7 +85,7 @@ END
     :sed           => %w( .sed ),
     :shell         => %w( .bash .csh .ksh .sh .tcsh .zsh ),
     :smalltalk     => %w( .st ),
-    :sml           => %w( .sml ),
+    :sml           => %w( .sml .cm .sig ),
     :sql           => %w( .ctl .sql ),
     :tcl           => %w( .itcl .itk .tcl ),
     :tex           => %w( .cls .sty .tex ),
@@ -137,6 +137,7 @@ END
                             [ '--help', GetoptLong::OPTIONAL_ARGUMENT ],
                             [ '--max-count', '-m', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '--files', '-f', GetoptLong::NO_ARGUMENT ],
+                            [ '--skipped', GetoptLong::NO_ARGUMENT ],
                             [ '--output', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '--version', GetoptLong::NO_ARGUMENT ],
                             [ '-c', '--count', GetoptLong::NO_ARGUMENT ],
@@ -201,6 +202,7 @@ END
     opt[:collect_context] = false
     opt[:filename_regex] = nil
     opt[:neg_filename_regex] = nil
+    opt[:reverse_relevance] = false
     
     # if redirected (RAK_TEST allows us to redirect in testing and still 
     # get the non-redirected defaults).
@@ -227,6 +229,9 @@ END
         when '--max-count'
           opt[:max_count] = arg.to_i
         when '--files'
+          opt[:only_print_filelist] = true
+        when '--skipped'
+          opt[:reverse_relevance] = true
           opt[:only_print_filelist] = true
         when '--output'
           opt[:print_filename] = false
@@ -396,8 +401,9 @@ END
     return unless File.readable?(path)
 
     if File.file?(path)
-      return unless file_relevant?(path)
-      yield(path.sub(/\A\.\/+/, "").gsub(/\/+/, "/"))
+      relevant = file_relevant?(path)
+      relevant = !relevant if opt[:reverse_relevance]
+      yield(path.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
     elsif File.directory?(path)
       Dir["#{path}/*"].each do |fn|
         next if VC_DIRS.any?{|vc| vc == File.basename(fn)}
@@ -705,6 +711,7 @@ Search output:
 File finding:
   -f                    Only print the files found, without searching.
                         The PATTERN must not be specified.
+  --skipped             Like -f but print files that were skipped.
   --sort-files          Sort the found files lexically.
 
 File inclusion/exclusion:
