@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
+require "pathname"
 
 if RUBY_PLATFORM =~ /mswin|mingw/
   begin
@@ -385,46 +386,46 @@ END
     @includes_rx ||= extension_regexp(opt[:includes])
     @excludes_rx ||= extension_regexp(opt[:excludes])
 
-    ext = File.basename(fn)
+    ext = fn.basename.to_s
     ext = shebang_matches(fn) unless ext =~ @types_rx
 
-    return false if !opt[:all_files]         and !ext or fn =~ /[~#]\z/
+    return false if !opt[:all_files]         and !ext or fn.to_s =~ /[~#]\z/
     return false if @includes_rx             and (ext||"") !~ @includes_rx
     return false if @excludes_rx             and (ext||"") =~ @excludes_rx
-    return false if opt[:filename_regex]     and fn  !~ opt[:filename_regex]
-    return false if opt[:neg_filename_regex] and fn  =~ opt[:neg_filename_regex]
+    return false if opt[:filename_regex]     and fn.to_s  !~ opt[:filename_regex]
+    return false if opt[:neg_filename_regex] and fn.to_s  =~ opt[:neg_filename_regex]
     return true
   end
 
   def self.find_all_files(path, &blk)
-    return if File.socket?(path)
-    return unless File.readable?(path)
+    return if path.socket?
+    return unless path.readable?
 
-    if File.file?(path)
+    if path.file?
       relevant = file_relevant?(path)
       relevant = !relevant if opt[:reverse_relevance]
-      yield(path.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
-    elsif File.directory?(path)
-      Dir["#{path}/*"].each do |fn|
-        next if VC_DIRS.any?{|vc| vc == File.basename(fn)}
-        next if File.directory?(fn) and not opt[:descend]
-        next if File.symlink?(fn) and not opt[:follow_symlinks]
+      yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
+    elsif path.directory?
+      path.children.each do |fn|
+        next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
+        next if fn.directory? and not opt[:descend]
+        next if fn.symlink? and not opt[:follow_symlinks]
         find_all_files(fn, &blk)
       end
     end
   end
 
-  # It's really asking for Pathname...
   def self.each_file(todo, &blk)
+    todo = todo.map{|path| Pathname(path)}
     if todo.empty?
       if STDIN.isatty
-        todo = ["."]
+        todo = [Pathname(".")]
       else
         opt[:print_filename] = false
         yield(STDIN)
         return
       end
-    elsif todo.size == 1 and File.file?(todo[0])
+    elsif todo.size == 1 and todo[0].file?
       opt[:print_filename] = false
     end
     
@@ -445,7 +446,7 @@ END
 
   def self.shebang_matches(fn)
     begin
-      line = File.open(fn).readline
+      line = fn.open.readline
       if line =~ /^#!/
         if line =~ /\b(ruby|perl|php|python|make)[0-9.]*\b/i
           FILE_TYPES[$1.downcase.intern].first
