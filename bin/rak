@@ -501,7 +501,6 @@ END
     code << %{  displayed_filename = false       }
     code << %{  count = 0                        }
     code << %{  i = 0                            }
-    code << %{  matches = []                     }
     code << %{  print_num = 0                    }
 
                 if opt[:before_context] > 0
@@ -514,8 +513,9 @@ END
     code << %{    f = fn                        }
     code << %{  end                             }
   
-    code << %{  f.each_line do |line|                                          }
-    code << %{    i += 1                                                         }
+    code << %{  f.each_line do |line|                                         }
+    code << %{    matches = []                          }
+    code << %{    i += 1                                                       }
                   if opt[:print_output]
     code << %{      line.scan(re){ matches << eval(opt[:print_output]) }                        }
                   else
@@ -539,10 +539,9 @@ END
                         if opt[:print_line_number]
     code << %{            print "\#{i.to_s.rjust(4)}|"                            }
                         end
-    code << %{          puts "\#{line.expand_tabs}"                                    }
+    code << %{          puts line.expand_tabs                                    }
                       end
     code << %{      end                                                               }
-    code << %{      matches.clear                                                   }
                   else
     code << %{      if matches.empty?                                                 }
                       if opt[:print_entire_line_if_no_match]
@@ -563,7 +562,7 @@ END
                             if opt[:print_line_number]
     code << %{                print "\#{i.to_s.rjust(4)}|"                            }
                             end
-    code << %{              puts "\#{line.expand_tabs}"                                }
+    code << %{              puts line.expand_tabs                                }
     code << %{            end                                                        }
                         end
                       end
@@ -591,16 +590,12 @@ END
                       end
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
-    code << %{            prefix = "\#{i.to_s.rjust(4)}|"                                   }
-                        else
-                          if opt[:print_file_each_line]
-    code << %{              fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")                            }
-    code << %{              prefix = fn_str + "\#{i.to_s}:"                            }
-                          else
-    code << %{              prefix = ""                                                        }
-                          end
+    code << %{            print  "\#{i.to_s.rjust(4)}|"                                   }
+                        elsif opt[:print_file_each_line]
+    code << %{            fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")                            }
+    code << %{            print fn_str + "\#{i}:"                            }
                         end
-    code << %{          print_highlighted(prefix, line, matches)                            }
+    code << %{          print_highlighted(line, matches)                            }
                       end
     code << %{      end                                                                      }
                     if opt[:max_count] 
@@ -608,7 +603,6 @@ END
     code << %{          break                                                               }
     code << %{        end                                                               }
                     end
-    code << %{      matches.clear                                                        }
                   end
     code << %{  end                                                                      }
     code << %{  f.close if f === File                                                        }
@@ -636,8 +630,7 @@ END
     module_eval code.join("\n")
   end
   
-  def self.print_highlighted(prefix, line, matches)
-    print prefix
+  def self.print_highlighted(line, matches)
     matches = matches.map{|md| md.offset(0)}
     cuts = [0, matches, line.size].flatten
     column = 0
