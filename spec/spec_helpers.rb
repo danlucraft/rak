@@ -1,15 +1,15 @@
 require 'fileutils'
 require "pathname"
 
+class String
+  def shell_escape
+    return "''" if empty?
+    return dup unless self =~ /[^0-9A-Za-z+,.\/:=@_-]/
+    gsub(/(')|[^']+/) { $1 ? "\\'" : "'#{$&}'"}
+  end
+end
+
 HERE = Pathname(__FILE__).parent.expand_path
-
-def strip_ansi(str)
-  str.gsub /\033\[(\d;)?\d+m/, ""
-end
-
-def asterize_ansi(str)
-  str.gsub /(\033\[(\d;)?\d+m)+/, "*"
-end
 
 def ruby_bin
   File.join(
@@ -18,16 +18,36 @@ def ruby_bin
   )
 end
 
-def rak(argstring, opts={})
+def replace_ansi(str, replacement)
+  if replacement
+    str.gsub(/(?:\033\[(?:\d;)?\d+m)+/, replacement)
+  else
+    str
+  end
+end
+
+def strip_ansi(str)
+  replace_ansi(str, '')
+end
+
+def asterize_ansi(str)
+  replace_ansi(str, '*')
+end
+
+def rak(args, opts={})
   begin
+    unless args.is_a?(String)
+      args = args.map{|str| str.shell_escape}.join(" ")
+    end
     bin_rak = HERE.parent.join("bin/rak")
-    cmd = "#{ruby_bin} #{bin_rak} #{argstring}"
+    cmd = "#{ruby_bin} #{bin_rak} #{args}"
     cmd = "#{opts[:pipe]} | #{cmd}" if opts[:pipe]
     ENV['RAK_TEST'] = "true" unless opts[:test_mode] == false
     dir = opts[:dir] || HERE+"example"
-    Dir.chdir(dir) do
+    output = Dir.chdir(dir) do
       %x{#{cmd}}
-    end    
+    end
+    replace_ansi(output, opts[:ansi])
   ensure
     ENV.delete('RAK_TEST')
   end

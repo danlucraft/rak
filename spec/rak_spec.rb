@@ -475,3 +475,120 @@ foo Pikon foo foo foo foo foo foo
 END
   end
 end
+
+describe "Rak", "with --eval" do 
+  it "should support next" do
+    rak(%Q[--eval 'next unless $. == $_.split.size'], :ansi => '*').should == t=<<END
+*foo.rb*
+   8|*foo Pikon foo foo foo foo foo foo*
+END
+  end
+
+  it "should support break" do
+    rak(%Q[--eval 'break if $. == 2'], :ansi => '*').should == t=<<END
+*dir1/bar.rb*
+   1|*
+
+*foo.rb*
+   1|*
+
+*quux.py*
+   1|*quux quux quux quux Virgon quux quux*
+
+*Rakefile*
+   1|*rakefile rakefile Canceron rakefile*
+
+*shebang*
+   1|*#!/usr/bin/env ruby*
+END
+  end
+
+  it "should support highlighting" do
+    rak(%Q[--eval 'next unless $_ =~ /Caprica/'], :ansi => '*').should == t=<<END
+*foo.rb*
+   3|foo foo foo *Caprica* foo foo foo
+END
+  end
+
+  it "should support ranges" do
+    rak(%Q[--eval 'next unless $_[/Capsicum/]..$_[/Pikon/]'], :ansi => '*').should == t=<<END
+*foo.rb*
+   4|*foo Capsicum foo foo foo foo foo*
+   5|*
+   6|foo foo foo foo foo *Pikon* foo foo
+END
+  end
+
+  it "should support next and contexts" do
+    rak(%Q[-C 2 --eval 'next unless $_ =~ /Pikon/'], :ansi => '*').should == t=<<END
+*dir1/bar.rb*
+   1|
+   2|bar bar bar bar *Pikon* bar
+   3| 
+   4|
+   7|
+   8|
+   9|bar bar *Pikon* bar bar bar
+
+*foo.rb*
+   4|foo Capsicum foo foo foo foo foo
+   5|
+   6|foo foo foo foo foo *Pikon* foo foo
+   7|
+   8|foo *Pikon* foo foo foo foo foo foo
+   9|
+  10|foo foo Six foo foo foo Six foo
+END
+  end
+
+  it "should support break and contexts (and matches past break should get no highlighting)" do
+    rak(%Q[-C 2 --eval 'next unless $_[/Pikon/]...(break; nil)'], :ansi => '*').should == t=<<END
+*dir1/bar.rb*
+   1|
+   2|bar bar bar bar *Pikon* bar
+   3| 
+   4|
+
+*foo.rb*
+   4|foo Capsicum foo foo foo foo foo
+   5|
+   6|foo foo foo foo foo *Pikon* foo foo
+   7|
+   8|foo Pikon foo foo foo foo foo foo
+END
+  end
+
+  it "should support $_ transformations" do
+    rak(%Q[--eval '$_=$_.reverse; next unless $_ =~ /oof/'], :ansi => '*').should == t=<<END
+*foo.rb*
+   3|*oof* oof oof acirpaC oof oof oof
+   4|*oof* oof oof oof oof mucispaC oof
+   6|*oof* oof nokiP oof oof oof oof oof
+   8|*oof* oof oof oof oof oof nokiP oof
+  10|*oof* xiS oof oof oof xiS oof oof
+  11|*oof* oof oof xiS oof oof oof oof
+  13|*oof* oof oof nonemeG oof oof oof
+END
+  end
+
+  it "should support multiple matches" do
+    rak(%Q[--eval 'next unless $_ =~ /Pikon/; $_.scan(/\\b\\w{3}\\b/){ matches << $~ }'], :ansi => '*').should == t=<<END
+*dir1/bar.rb*
+   2|*bar* *bar* *bar* *bar* Pikon *bar*
+   9|*bar* *bar* Pikon *bar* *bar* *bar*
+
+*foo.rb*
+   6|*foo* *foo* *foo* *foo* *foo* Pikon *foo* *foo*
+   8|*foo* Pikon *foo* *foo* *foo* *foo* *foo* *foo*
+END
+  end
+end
+
+## Other things --eval could support:
+# * per file   BEGIN{} END{}
+# * global     BEGIN{} END{}
+# * better way to highlight multiple matches
+# 
+# There's also redo but I cannot think of any sensible use
+# (especially if $_ won't persist between runs)
+# (also redo in -nl/-pl is broken)

@@ -171,7 +171,8 @@ END
                             [ '-k', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '-x', '--line-regexp', GetoptLong::NO_ARGUMENT ],
                             [ '-s', '--line-start', GetoptLong::NO_ARGUMENT ],
-                            [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ]
+                            [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ],
+                            [ '--eval', GetoptLong::REQUIRED_ARGUMENT ]
                             )
 
     opt[:max_count] = nil
@@ -204,6 +205,7 @@ END
     opt[:filename_regex] = nil
     opt[:neg_filename_regex] = nil
     opt[:reverse_relevance] = false
+    opt[:eval] = nil
     
     # if redirected (RAK_TEST allows us to redirect in testing and still 
     # get the non-redirected defaults).
@@ -227,6 +229,8 @@ END
             end
           end
           exit
+        when '--eval'
+          opt[:eval] = arg
         when '--max-count'
           opt[:max_count] = arg.to_i
         when '--files'
@@ -357,11 +361,13 @@ END
       each_file(ARGV) do |fn|
         puts fn
       end
-    elsif ARGV.empty?
+    elsif ARGV.empty? and !opt[:eval]
       puts USAGE_HELP
       exit
     else
-      re = compile_pattern(ARGV.shift)
+      unless opt[:eval]
+        re = compile_pattern(ARGV.shift)
+      end
       compiled = false
       file_separator = ""
       each_file(ARGV) do |fn|
@@ -500,9 +506,8 @@ END
     code << %{def self.match_file(re, fn, file_separator)        }
     code << %{  displayed_filename = false       }
     code << %{  count = 0                        }
-    code << %{  i = 0                            }
     code << %{  print_num = 0                    }
-
+    code << %{  eval_caused_break = false         }
                 if opt[:before_context] > 0
     code << %{    before_context = []                           }
     code << %{    before_context_size = opt[:before_context]    }
@@ -515,11 +520,36 @@ END
   
     code << %{  f.each_line do |line|                                         }
     code << %{    matches = []                          }
-    code << %{    i += 1                                                       }
-                  if opt[:print_output]
-    code << %{      line.scan(re){ matches << eval(opt[:print_output]) }                        }
+                  if opt[:eval]
+    ## This code would be really simple if next/break just skipped to next line/file
+    #  This won't work with context printing, so we cheat instead
+    code << %{      unless eval_caused_break                                                  }
+    code << %{        $_ = line.chomp                            }
+    code << %{        $~ = nil                                            }
+    code << %{        eval_caused_break = true                                          }
+    code << %{        eval_executed = false                                          }
+    code << %{        loop do                                        }
+    code << %{          if eval_executed                                                }
+    code << %{            eval_caused_break = false                                           }
+    code << %{            break                                            }
+    code << %{          end                                             }
+    code << %{          eval_executed = true                                              }
+    code << %{          #{opt[:eval]}                                        }
+    code << %{          if matches.empty?                                            }
+    code << %{            $_ =~ /^.*$/ unless $~                       }
+    code << %{            matches << $~                            }
+    code << %{          end                                            }
+    code << %{          line = $_                                }
+    code << %{          eval_caused_break = false                                           }
+    code << %{          break                                         }
+    code << %{        end                                           }
+    code << %{      end                                               }
                   else
-    code << %{      line.scan(re){ matches << $~  }                                           }
+                    if opt[:print_output]
+    code << %{        line.scan(re){ matches << eval(opt[:print_output]) }                        }
+                    else
+    code << %{        line.scan(re){ matches << $~  }                                           }
+                    end
                   end
                   if opt[:print_match]
     code << %{      matches.each{|md| puts md.to_s  }                                            }
@@ -537,7 +567,7 @@ END
     code << %{      if matches.empty?                                                 }
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
-    code << %{            print "\#{i.to_s.rjust(4)}|"                            }
+    code << %{            print "\#{$..to_s.rjust(4)}|"                            }
                         end
     code << %{          puts line.expand_tabs                                    }
                       end
@@ -550,7 +580,7 @@ END
                       if opt[:use_context]
                         if opt[:before_context] > 0 
     code << %{            if print_num == 0                                                 }
-    code << %{              before_context << [i, line]                                   }
+    code << %{              before_context << [$., line]                                   }
     code << %{              if before_context.length > before_context_size                            }
     code << %{                before_context.shift                                        }
     code << %{              end                                                               }
@@ -560,7 +590,7 @@ END
     code << %{            print_num -= 1                                                 }
                           if opt[:print_highlighted]
                             if opt[:print_line_number]
-    code << %{                print "\#{i.to_s.rjust(4)}|"                            }
+    code << %{                print "\#{$..to_s.rjust(4)}|"                            }
                             end
     code << %{              puts line.expand_tabs                                }
     code << %{            end                                                        }
@@ -590,10 +620,10 @@ END
                       end
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
-    code << %{            print  "\#{i.to_s.rjust(4)}|"                                   }
+    code << %{            print  "\#{$..to_s.rjust(4)}|"                                   }
                         elsif opt[:print_file_each_line]
     code << %{            fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")                            }
-    code << %{            print fn_str + "\#{i}:"                            }
+    code << %{            print fn_str + "\#{$.}:"                            }
                         end
     code << %{          print_highlighted(line, matches)                            }
                       end
@@ -608,7 +638,7 @@ END
     code << %{  f.close if f === File                                                        }
                 if opt[:print_num_matches]
                   if opt[:invert_match]
-    code << %{      puts "\#{fn}:\#{i-count}"                                                 }
+    code << %{      puts "\#{fn}:\#{$.-count}"                                                 }
                   else       
     code << %{      if count > 0                                        }
     code << %{        puts "\#{fn}:\#{count}"                           }
