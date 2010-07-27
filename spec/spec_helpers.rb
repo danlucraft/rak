@@ -10,6 +10,7 @@ class String
 end
 
 HERE = Pathname(__FILE__).parent.expand_path
+require(HERE.join("../lib/rak"))
 
 def ruby_bin
   File.join(
@@ -34,7 +35,7 @@ def asterize_ansi(str)
   replace_ansi(str, '*')
 end
 
-def rak(args, opts={})
+def rak(args="", opts={})
   begin
     unless args.is_a?(String)
       args = args.map{|str| str.shell_escape}.join(" ")
