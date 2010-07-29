@@ -6,38 +6,44 @@ end
 
 describe "Rak", "help and errors" do
   it "--version prints version information" do
-    rak("--version", :ansi => '').should == <<-END.unindent(6)
+    rak("--version").should == <<-END
       rak #{Rak::VERSION}
-      
+
       Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
       Based on the perl tool 'ack' by Andy Lester.
-      
+
       This program is free software; you can redistribute it and/or modify it
       under the same terms as Ruby.
     END
   end
   
   it "prints unknown type errors" do
-    rak("Virg --type=pyth").should == <<-END.unindent(6)
+    rak("Virg --type=pyth").should == <<-END
       rak: Unknown --type "pyth"
       rak: See rak --help types
     END
   end
   
   it "--help prints help information" do
-    rak("Virg --help").split("\n")[0].should == "Usage: rak [OPTION]... PATTERN [FILES]"
+    rak("Virg --help").lines[0].should == <<-END
+      Usage: rak [OPTION]... PATTERN [FILES]
+    END
   end
   
   it "--help types prints type information" do
-    rak("--help types").split("\n")[2].should == "The following is the list of filetypes supported by rak.  You can"
+    rak("--help types").lines[2].should == <<-END
+      The following is the list of filetypes supported by rak.  You can
+    END
   end
   
   it "no options or patterns prints the usage info" do
-    rak.split("\n")[0].should == "Usage: rak [OPTION]... PATTERN [FILES]"
+    rak.lines[0].should == <<-END
+      Usage: rak [OPTION]... PATTERN [FILES]
+    END
   end
 
   it "prints a nice message for unknown options" do
-    rak("foo --asfdasfd 2>/dev/null").should include <<-END.unindent(6)
+    rak("foo --asfdasfd 2>/dev/null").should include <<-END
       rak: see rak --help for usage.
     END
   end

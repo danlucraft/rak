@@ -7,9 +7,13 @@ class String
     return dup unless self =~ /[^0-9A-Za-z+,.\/:=@_-]/
     gsub(/(')|[^']+/) { $1 ? "\\'" : "'#{$&}'"}
   end
-  
-  def unindent(n)
-    gsub(/^ {0,#{n}}/, "")
+
+  def lines
+    result = []
+    each_line do |line|
+      result << line
+    end
+    result
   end
 end
 
@@ -21,14 +25,6 @@ def ruby_bin
     Config::CONFIG["bindir"],
     Config::CONFIG["ruby_install_name"] + Config::CONFIG["EXEEXT"]
   )
-end
-
-def replace_ansi(str, replacement)
-  if replacement
-    str.gsub(/(?:\033\[(?:\d;)?\d+m)+/, replacement)
-  else
-    str
-  end
 end
 
 def bin_rak
@@ -47,12 +43,9 @@ def rak(args="", opts={})
     output = Dir.chdir(dir) do
       %x{#{cmd}}
     end
-    replace_ansi(output, opts[:ansi])
+    output = output.gsub(/(?:\033\[(?:\d;)?\d+m)+/, opts[:ansi]||'*')
+    output.gsub(/^(?!$)/, "      ")
   ensure
     ENV.delete('RAK_TEST')
   end
-end
-
-def sort_lines(str)
-  str.split("\n").sort.join("\n")
 end

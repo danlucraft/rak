@@ -6,7 +6,7 @@ require File.dirname(__FILE__) + "/spec_helpers"
 
 describe "Rak", "with no options" do 
   it "prints all matches from files in the current directory" do
-    rak("Cap.ic", :ansi => '*').should == <<-END.unindent(6)
+    rak("Cap.ic").should == <<-END
       *foo.rb*
          3|foo foo foo *Capric*a foo foo foo
          4|foo *Capsic*um foo foo foo foo foo
@@ -14,7 +14,7 @@ describe "Rak", "with no options" do
   end
   
   it "prints all matches correctly" do
-    rak("foo", :ansi => '').should == <<-END.unindent(6)
+    rak("foo", :ansi => '').should == <<-END
       foo.rb
          3|foo foo foo Caprica foo foo foo
          4|foo Capsicum foo foo foo foo foo
@@ -27,7 +27,7 @@ describe "Rak", "with no options" do
   end
 
   it "prints all matches from files in subdirectories" do
-    rak("Pikon", :ansi => '*').should == <<-END.unindent(6)
+    rak("Pikon").should == <<-END
       *dir1/bar.rb*
          2|bar bar bar bar *Pikon* bar
          9|bar bar *Pikon* bar bar bar
@@ -39,7 +39,7 @@ describe "Rak", "with no options" do
   end
   
   it "prints multiple matches in a line" do
-    rak("Six", :ansi => '*').should == <<-END.unindent(6)
+    rak("Six").should == <<-END
       *foo.rb*
         10|foo foo *Six* foo foo foo *Six* foo
         11|foo foo foo foo *Six* foo foo foo
@@ -55,21 +55,21 @@ describe "Rak", "with no options" do
   end
   
   it "changes defaults when redirected" do
-    rak("Six | cat", :test_mode => false, :ansi => '*').should == <<-END.unindent(6)
+    rak("Six | cat", :test_mode => false).should == <<-END
       foo.rb:10:foo foo Six foo foo foo Six foo
       foo.rb:11:foo foo foo foo Six foo foo foo
     END
   end
 
   it "searches shebangs for valid inputs" do
-    rak("Aquaria", :ansi => '*').should == <<-END.unindent(6)
+    rak("Aquaria").should == <<-END
       *shebang*
          3|goo goo goo *Aquaria* goo goo
     END
   end
   
   it "recognizes Makefiles and Rakefiles" do
-    rak("Canceron", :ansi => '*').should == <<-END.unindent(6)
+    rak("Canceron").should == <<-END
       *Rakefile*
          1|rakefile rakefile *Canceron* rakefile
     END
@@ -78,11 +78,11 @@ end
 
 describe "Rak", "with FILE or STDIN inputs" do
   it "should only search in given files or directories" do
-    rak("Pikon foo.rb", :ansi => '*').should == <<-END.unindent(6)
+    rak("Pikon foo.rb").should == <<-END
          6|foo foo foo foo foo *Pikon* foo foo
          8|foo *Pikon* foo foo foo foo foo foo
     END
-    rak("Pikon dir1/", :ansi => '').should == <<-END.unindent(6)
+    rak("Pikon dir1/", :ansi => '').should == <<-END
       dir1/bar.rb
          2|bar bar bar bar Pikon bar
          9|bar bar Pikon bar bar bar
@@ -90,13 +90,13 @@ describe "Rak", "with FILE or STDIN inputs" do
   end
   
   it "should search in STDIN by default if no files are specified" do
-    rak("Aere", :pipe => "cat _darcs/baz.rb", :ansi => '*').should == <<-END.unindent(6)
+    rak("Aere", :pipe => "cat _darcs/baz.rb").should == <<-END
          2|baz baz baz *Aere*lon baz baz baz
     END
   end
   
   it "only searches STDIN when piped to" do
-    rak("Cap", :pipe => "echo asdfCapasdf", :ansi => '*').should == <<-END.unindent(6)
+    rak("Cap", :pipe => "echo asdfCapasdf").should == <<-END
          1|asdf*Cap*asdf
     END
   end
@@ -108,40 +108,40 @@ end
 
 describe "Rak", "options" do
   it "prints only files with --files" do
-    t = <<-END.unindent(6)
+    t = <<-END
       Rakefile
       quux.py
       dir1/bar.rb
       foo.rb
       shebang
     END
-    sort_lines(rak("-f")).should == sort_lines(t)
+    rak("-f").lines.sort.should == t.lines.sort
   end
   
   it "prints a maximum number of matches if --max-count=x is specified" do
-    rak("Cap.ic -m 1", :ansi => '').should == <<-END.unindent(6)
+    rak("Cap.ic -m 1", :ansi => '').should == <<-END
       foo.rb
          3|foo foo foo Caprica foo foo foo
     END
   end
   
   it "prints the evaluated output for --output" do
-    rak("Cap --output='$&'", :ansi => '').should == <<-END.unindent(6)
+    rak("Cap --output='$&'", :ansi => '').should == <<-END
       Cap
       Cap
     END
   end
   
   it "-c prints only the number of matches found per file" do
-    t = <<-END.unindent(6)
+    t = <<-END
       dir1/bar.rb:2
       foo.rb:2
     END
-    sort_lines(rak("Pik -c", :ansi => '')).should == sort_lines(t)
+    rak("Pik -c", :ansi => '').lines.sort.should == t.lines.sort
   end
   
   it "-h suppresses filename and line number printing" do
-    rak("Pik -h", :ansi => '*').should == <<-END.unindent(6)
+    rak("Pik -h").should == <<-END
       bar bar bar bar *Pik*on bar
       bar bar *Pik*on bar bar bar
       foo foo foo foo foo *Pik*on foo foo
@@ -150,7 +150,7 @@ describe "Rak", "options" do
   end
   
   it "ignores case with -i" do
-    rak("six -i", :ansi => '').should == <<-END.unindent(6)
+    rak("six -i", :ansi => '').should == <<-END
       foo.rb
         10|foo foo Six foo foo foo Six foo
         11|foo foo foo foo Six foo foo foo
@@ -158,11 +158,11 @@ describe "Rak", "options" do
   end
   
   it "inverts the match with -v" do
-    t1 = <<-END.unindent(6)
+    t1 = <<-END
       quux.py
          1|quux quux quux quux Virgon quux quux
     END
-    t12 = <<-END.unindent(6)
+    t12 = <<-END
       dir1/bar.rb
          1|
          2|bar bar bar bar Pikon bar
@@ -174,7 +174,7 @@ describe "Rak", "options" do
          8|
          9|bar bar Pikon bar bar bar
     END
-    t2 = <<-END.unindent(6)
+    t2 = <<-END
       foo.rb
          1|
          2|
@@ -183,13 +183,13 @@ describe "Rak", "options" do
          9|
         12|
     END
-    t3 = <<-END.unindent(6)
+    t3 = <<-END
       shebang
          1|#!/usr/bin/env ruby
          2|
          3|goo goo goo Aquaria goo goo
     END
-    t4 = <<-END.unindent(6)
+    t4 = <<-END
       Rakefile
          1|rakefile rakefile Canceron rakefile
     END
@@ -199,11 +199,11 @@ describe "Rak", "options" do
     r.should include t2
     r.should include t3
     r.should include t4
-    r.split("\n").length.should == 29
+    r.lines.length.should == 29
   end
   
   it "doesn't descend into subdirs with -n" do
-    rak("Pikon -n", :ansi => '').should == <<-END.unindent(6)
+    rak("Pikon -n", :ansi => '').should == <<-END
       foo.rb
          6|foo foo foo foo foo Pikon foo foo
          8|foo Pikon foo foo foo foo foo foo
@@ -211,49 +211,49 @@ describe "Rak", "options" do
   end
   
   it "quotes meta-characters with -Q" do
-    rak("Cap. -Q", :ansi => '').should == ""
+    rak("Cap. -Q").should == ""
   end
   
   it "prints only the matching portion with -o" do
-    rak("Cap -o", :ansi => '').should == <<-END.unindent(6)
+    rak("Cap -o", :ansi => '').should == <<-END
       Cap
       Cap
     END
   end
   
   it "matches whole words only with -w" do
-    rak("'Cap|Hat' -w", :ansi => '').should == ""
+    rak("'Cap|Hat' -w").should == ""
   end
   
    it "prints the file on each line with --nogroup" do
-    rak("Cap --nogroup", :ansi => '*').should == <<-END.unindent(6)
+    rak("Cap --nogroup").should == <<-END
       *foo.rb*:3:foo foo foo *Cap*rica foo foo foo
       *foo.rb*:4:foo *Cap*sicum foo foo foo foo foo
     END
   end
   
   it "-l means only print filenames with matches" do
-    rak("Caprica -l", :ansi => '*').should == <<-END.unindent(6)
+    rak("Caprica -l").should == <<-END
       foo.rb
     END
   end
   
   it "-L means only print filenames without matches" do
-    t = <<-END.unindent(6)
+    t = <<-END
       quux.py
       dir1/bar.rb
       shebang
       Rakefile
     END
-    sort_lines(rak("Caprica -L", :ansi => '')).should == sort_lines(t)
+    rak("Caprica -L", :ansi => '').lines.sort.should == t.lines.sort
   end
   
   it "--passthru means print all lines whether matching or not" do
-     t1 = <<-END.unindent(6)
+     t1 = <<-END
       quux quux quux quux Virgon quux quux
     END
 
-    t2 = <<-END.unindent(6)
+    t2 = <<-END
       *foo.rb*
          3|foo foo foo *Caprica* foo foo foo
       foo Capsicum foo foo foo foo foo
@@ -267,20 +267,20 @@ describe "Rak", "options" do
 
       foo foo foo Gemenon foo foo foo
     END
-    t3 = <<-END.unindent(6)
+    t3 = <<-END
       #!/usr/bin/env ruby
 
       goo goo goo Aquaria goo goo
     END
-    r = rak("Caprica --passthru -n", :ansi => '*')
+    r = rak("Caprica --passthru -n")
     r.should include t1
     r.should include t2
     r.should include t3
-    r.split("\n").length.should < (t1+t2+t3).split("\n").length+5
+    r.lines.length.should < (t1+t2+t3).lines.length+5
   end
   
   it "--nocolour means do not colourize the output" do
-    rak("Cap --nocolour", :ansi => '*').should == <<-END.unindent(6)
+    rak("Cap --nocolour").should == <<-END
       foo.rb
          3|foo foo foo Caprica foo foo foo
          4|foo Capsicum foo foo foo foo foo
@@ -288,38 +288,38 @@ describe "Rak", "options" do
   end
   
   it "-a means to search every file" do
-    rak("Libris -a", :ansi => '*').should == <<-END.unindent(6)
+    rak("Libris -a").should == <<-END
       *qux*
          1|qux qux qux *Libris* qux qux qux
     END
   end
   
   it "--ruby means only ruby files" do
-    rak("Virgon --ruby", :ansi => '*').should == ""
+    rak("Virgon --ruby").should == ""
   end
   
   it "--python means only python files" do
-    rak("Cap --python", :ansi => '*').should == ""
+    rak("Cap --python").should == ""
   end
   
   it "--noruby means exclude ruby files" do
-    rak("Cap --noruby", :ansi => '*').should == ""
+    rak("Cap --noruby").should == ""
   end
   
   it "--type=ruby means only ruby files" do
-    rak("Virgon --type=ruby", :ansi => '*').should == ""
+    rak("Virgon --type=ruby").should == ""
   end
   
   it "--type=python means only python files" do
-    rak("Cap --type=python", :ansi => '*').should == ""
+    rak("Cap --type=python").should == ""
   end
   
   it "--type=noruby means exclude ruby files" do
-    rak("Cap --type=noruby", :ansi => '*').should == ""
+    rak("Cap --type=noruby").should == ""
   end
   
   it "--sort-files" do
-    rak("-f --sort-files").should == <<-END.unindent(6)
+    rak("-f --sort-files").should == <<-END
       dir1/bar.rb
       foo.rb
       quux.py
@@ -329,7 +329,7 @@ describe "Rak", "options" do
   end
   
   it "--follow means follow symlinks" do 
-    rak("Sagitarron --follow", :ansi => '').should == <<-END.unindent(6)
+    rak("Sagitarron --follow", :ansi => '').should == <<-END
       corge.rb
          1|corge corge corge Sagitarron corge
 
@@ -339,7 +339,7 @@ describe "Rak", "options" do
   end
   
   it "-A NUM means show NUM lines after" do 
-    rak("Caps -A 2", :ansi => '').should == <<-END.unindent(6)
+    rak("Caps -A 2", :ansi => '').should == <<-END
       foo.rb
          4|foo Capsicum foo foo foo foo foo
          5|
@@ -348,7 +348,7 @@ describe "Rak", "options" do
   end
   
   it "-A should work when there are matches close together" do 
-    rak("foo -A 2", :ansi => '').should == <<-END.unindent(6)
+    rak("foo -A 2", :ansi => '').should == <<-END
       foo.rb
          3|foo foo foo Caprica foo foo foo
          4|foo Capsicum foo foo foo foo foo
@@ -365,7 +365,7 @@ describe "Rak", "options" do
   end
   
   it "-B NUM means show NUM lines before" do 
-    rak("Caps -B 2", :ansi => '').should == <<-END.unindent(6)
+    rak("Caps -B 2", :ansi => '').should == <<-END
       foo.rb
          2|
          3|foo foo foo Caprica foo foo foo
@@ -374,7 +374,7 @@ describe "Rak", "options" do
   end
   
   it "-C means show 2 lines before and after" do 
-    rak("Caps -C", :ansi => '').should == <<-END.unindent(6)
+    rak("Caps -C", :ansi => '').should == <<-END
       foo.rb
          2|
          3|foo foo foo Caprica foo foo foo
@@ -385,7 +385,7 @@ describe "Rak", "options" do
   end
   
   it "-C 1 means show 1 lines before and after" do 
-    rak("Caps -C 1", :ansi => '').should == <<-END.unindent(6)
+    rak("Caps -C 1", :ansi => '').should == <<-END
       foo.rb
          3|foo foo foo Caprica foo foo foo
          4|foo Capsicum foo foo foo foo foo
@@ -394,7 +394,7 @@ describe "Rak", "options" do
   end
   
   it "-C works correctly for nearby results" do
-    rak("Pik -g foo -C", :ansi => '').should == <<-END.unindent(6)
+    rak("Pik -g foo -C", :ansi => '').should == <<-END
       foo.rb
          4|foo Capsicum foo foo foo foo foo
          5|
@@ -407,7 +407,7 @@ describe "Rak", "options" do
   end
 
   it "-g REGEX only searches in files matching REGEX" do
-    rak("Pikon -g f.o", :ansi => '*').should == <<-END.unindent(6)
+    rak("Pikon -g f.o").should == <<-END
       *foo.rb*
          6|foo foo foo foo foo *Pikon* foo foo
          8|foo *Pikon* foo foo foo foo foo foo
@@ -415,7 +415,7 @@ describe "Rak", "options" do
   end
 
   it "-k REGEX only searches in files not matching REGEX" do
-    rak("Pikon -k f.o", :ansi => '*').should == <<-END.unindent(6)
+    rak("Pikon -k f.o").should == <<-END
       *dir1/bar.rb*
          2|bar bar bar bar *Pikon* bar
          9|bar bar *Pikon* bar bar bar
@@ -423,9 +423,9 @@ describe "Rak", "options" do
   end
   
   it "-x means match only whole lines" do
-    rak("Cap -x", :ansi => '*').should == ""
-    rak('"foo|goo" -x', :ansi => '*').should == ""
-    rak('"(foo )+Cap\w+( foo)+" -x', :ansi => '*').should == <<-END.unindent(6)
+    rak("Cap -x").should == ""
+    rak('"foo|goo" -x').should == ""
+    rak('"(foo )+Cap\w+( foo)+" -x').should == <<-END
       *foo.rb*
          3|*foo foo foo Caprica foo foo foo*
          4|*foo Capsicum foo foo foo foo foo*
@@ -433,38 +433,38 @@ describe "Rak", "options" do
   end
 
   it "-s means match only at the start of a line" do
-    rak('-s "foo Cap|Aquaria"', :ansi => '*').should == <<-END.unindent(6)
+    rak('-s "foo Cap|Aquaria"').should == <<-END
       *foo.rb*
          4|*foo Cap*sicum foo foo foo foo foo
     END
   end
 
   it "-e means match only at the end of a line" do
-    rak('-e "Aquaria|kon foo foo"', :ansi => '*').should == <<-END.unindent(6)
+    rak('-e "Aquaria|kon foo foo"').should == <<-END
       *foo.rb*
          6|foo foo foo foo foo Pi*kon foo foo*
     END
   end
   
   it "should not recurse down '..' when used with . " do
-    rak("foo .", :dir=>HERE+"example/dir1", :ansi => "*").should == ""
+    rak("foo .", :dir=>HERE+"example/dir1").should == ""
   end
 end
 
 describe "Rak", "with combinations of options" do
   it "should process -c -v " do
-    t1=<<-END.unindent(6)
+    t1=<<-END
       quux.py:1
       dir1/bar.rb:7
       foo.rb:11
       shebang:3
       Rakefile:1
     END
-    sort_lines(rak("Pikon -c -v", :ansi => '')).should == sort_lines(t1)
+    rak("Pikon -c -v", :ansi => '').lines.sort.should == t1.lines.sort
   end
 
   it "-h and redirection" do
-    rak("Pik -h | cat", :test_mode => false).should == <<-END.unindent(6)
+    rak("Pik -h | cat", :test_mode => false).should == <<-END
       bar bar bar bar Pikon bar
       bar bar Pikon bar bar bar
       foo foo foo foo foo Pikon foo foo
@@ -475,14 +475,14 @@ end
 
 describe "Rak", "with --eval" do 
   it "should support next" do
-    rak(%Q[--eval 'next unless $. == $_.split.size'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[--eval 'next unless $. == $_.split.size']).should == <<-END
       *foo.rb*
          8|*foo Pikon foo foo foo foo foo foo*
     END
   end
 
   it "should support break" do
-    rak(%Q[--eval 'break if $. == 2'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[--eval 'break if $. == 2']).should == <<-END
       *dir1/bar.rb*
          1|*
 
@@ -501,14 +501,14 @@ describe "Rak", "with --eval" do
   end
 
   it "should support highlighting" do
-    rak(%Q[--eval 'next unless $_ =~ /Caprica/'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[--eval 'next unless $_ =~ /Caprica/']).should == <<-END
       *foo.rb*
          3|foo foo foo *Caprica* foo foo foo
     END
   end
 
   it "should support ranges" do
-    rak(%Q[--eval 'next unless $_[/Capsicum/]..$_[/Pikon/]'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[--eval 'next unless $_[/Capsicum/]..$_[/Pikon/]']).should == <<-END
       *foo.rb*
          4|*foo Capsicum foo foo foo foo foo*
          5|*
@@ -517,7 +517,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support next and contexts" do
-    rak(%Q[-C 2 --eval 'next unless $_ =~ /Pikon/'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[-C 2 --eval 'next unless $_ =~ /Pikon/']).should == <<-END
       *dir1/bar.rb*
          1|
          2|bar bar bar bar *Pikon* bar
@@ -539,7 +539,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support break and contexts (and matches past break should get no highlighting)" do
-    rak(%Q[-C 2 --eval 'next unless $_[/Pikon/]...(break; nil)'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[-C 2 --eval 'next unless $_[/Pikon/]...(break; nil)']).should == <<-END
       *dir1/bar.rb*
          1|
          2|bar bar bar bar *Pikon* bar
@@ -556,7 +556,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support $_ transformations" do
-    rak(%Q[--eval '$_=$_.reverse; next unless $_ =~ /oof/'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[--eval '$_=$_.reverse; next unless $_ =~ /oof/']).should == <<-END
       *foo.rb*
          3|*oof* oof oof acirpaC oof oof oof
          4|*oof* oof oof oof oof mucispaC oof
@@ -569,7 +569,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support multiple matches" do
-    rak(%Q[--eval 'next unless $_ =~ /Pikon/; $_.scan(/\\b\\w{3}\\b/){ matches << $~ }'], :ansi => '*').should == <<-END.unindent(6)
+    rak(%Q[--eval 'next unless $_ =~ /Pikon/; $_.scan(/\\b\\w{3}\\b/){ matches << $~ }']).should == <<-END
       *dir1/bar.rb*
          2|*bar* *bar* *bar* *bar* Pikon *bar*
          9|*bar* *bar* Pikon *bar* *bar* *bar*
