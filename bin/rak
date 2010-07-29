@@ -698,12 +698,15 @@ Searching:
   -x, --line-regexp     Force PATTERN to match only whole lines
   -Q, --literal         Quote all metacharacters; expr is literal
   -s, --line-start      Match only at the start of a line
-  -e, --line-start      Match only at the end of a line
+  -e, --line-end        Match only at the end of a line
+
+  --eval CODE           Match with Ruby code instead of regex.
+                        [Highly experimental]
 
 Search output:
   -l, --files-with-matches
                         Only print filenames containing matches
-  -L, --files-without-match
+  -L, --files-without-matches
                         Only print filenames with no match
   -o                    Show only the part of a line matching PATTERN
                         (turns off text highlighting)
@@ -733,7 +736,7 @@ Search output:
                         Print NUM lines (default 2) of output context.
 
 File finding:
-  -f                    Only print the files found, without searching.
+  -f, --files           Only print the files found, without searching.
                         The PATTERN must not be specified.
   --skipped             Like -f but print files that were skipped.
   --sort-files          Sort the found files lexically.
