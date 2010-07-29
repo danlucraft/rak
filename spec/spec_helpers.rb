@@ -7,6 +7,10 @@ class String
     return dup unless self =~ /[^0-9A-Za-z+,.\/:=@_-]/
     gsub(/(')|[^']+/) { $1 ? "\\'" : "'#{$&}'"}
   end
+  
+  def unindent(n)
+    gsub(/^ {0,#{n}}/, "")
+  end
 end
 
 HERE = Pathname(__FILE__).parent.expand_path
@@ -27,12 +31,8 @@ def replace_ansi(str, replacement)
   end
 end
 
-def strip_ansi(str)
-  replace_ansi(str, '')
-end
-
-def asterize_ansi(str)
-  replace_ansi(str, '*')
+def bin_rak
+  HERE.parent.join("bin/rak")
 end
 
 def rak(args="", opts={})
@@ -40,7 +40,6 @@ def rak(args="", opts={})
     unless args.is_a?(String)
       args = args.map{|str| str.shell_escape}.join(" ")
     end
-    bin_rak = HERE.parent.join("bin/rak")
     cmd = "#{ruby_bin} #{bin_rak} #{args}"
     cmd = "#{opts[:pipe]} | #{cmd}" if opts[:pipe]
     ENV['RAK_TEST'] = "true" unless opts[:test_mode] == false
