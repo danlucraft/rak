@@ -119,9 +119,20 @@ describe "Rak", "options" do
   end
   
   it "prints a maximum number of matches if --max-count=x is specified" do
-    rak("Cap.ic -m 1", :ansi => '').should == <<-END
-      foo.rb
-         3|foo foo foo Caprica foo foo foo
+    rak("Cap.ic -m 1").should == <<-END
+      *foo.rb*
+         3|foo foo foo *Capric*a foo foo foo
+    END
+  end
+
+  it "prints context of all matches if -m and -C are both specified, without further highlighting" do
+    rak("Cap.ic -C2 -m 1").should == <<-END
+      *foo.rb*
+         1|
+         2|
+         3|foo foo foo *Capric*a foo foo foo
+         4|foo Capsicum foo foo foo foo foo
+         5|
     END
   end
   
@@ -131,13 +142,22 @@ describe "Rak", "options" do
       Cap
     END
   end
+
+  it "-v -c displays correct counts even with multiple matches per line" do
+    rak("-v -c bar").lines.sort.join.should == <<-END
+      Rakefile:1
+      dir1/bar.rb:7
+      foo.rb:13
+      quux.py:1
+      shebang:3
+    END
+  end
   
   it "-c prints only the number of matches found per file" do
-    t = <<-END
+    rak("Pik -c").lines.sort.join.should  == <<-END
       dir1/bar.rb:2
       foo.rb:2
     END
-    rak("Pik -c", :ansi => '').lines.sort.should == t.lines.sort
   end
   
   it "-h suppresses filename and line number printing" do
@@ -150,10 +170,10 @@ describe "Rak", "options" do
   end
   
   it "ignores case with -i" do
-    rak("six -i", :ansi => '').should == <<-END
-      foo.rb
-        10|foo foo Six foo foo foo Six foo
-        11|foo foo foo foo Six foo foo foo
+    rak("six -i").should == <<-END
+      *foo.rb*
+        10|foo foo *Six* foo foo foo *Six* foo
+        11|foo foo foo foo *Six* foo foo foo
     END
   end
   

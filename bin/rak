@@ -502,15 +502,25 @@ END
   # the match method based on them. This is gives a 2x speedup over
   # the alternative.
   def self.compile_match_file
+    needs_no_more_matches = (opt[:max_count] or opt[:eval])
+    needs_inverse_count = (opt[:print_num_matches] and opt[:invert_match])
+        
     code = []
     code << %{def self.match_file(re, fn, file_separator)        }
     code << %{  displayed_filename = false       }
     code << %{  count = 0                        }
+                if needs_inverse_count
+    code << %{    inverse_count = 0             }
+                end
     code << %{  print_num = 0                    }
-    code << %{  eval_caused_break = false         }
+                if needs_no_more_matches
+    code << %{    no_more_matches = false          }
+                end
+                if opt[:print_file_each_line]
+    code << %{    fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")      }
+                end
                 if opt[:before_context] > 0
     code << %{    before_context = []                           }
-    code << %{    before_context_size = opt[:before_context]    }
                 end
     code << %{  if fn.is_a? String              }
     code << %{    f = File.open(fn, "r")        }
@@ -520,17 +530,16 @@ END
   
     code << %{  f.each_line do |line|                                         }
     code << %{    matches = []                          }
-                  if opt[:eval]
-    ## This code would be really simple if next/break just skipped to next line/file
-    #  This won't work with context printing, so we cheat instead
-    code << %{      unless eval_caused_break                                                  }
+                  
+    code << %{    unless no_more_matches }  if needs_no_more_matches
+                    if opt[:eval]
     code << %{        $_ = line.chomp                            }
     code << %{        $~ = nil                                            }
-    code << %{        eval_caused_break = true                                          }
+    code << %{        no_more_matches = true                                          }
     code << %{        eval_executed = false                                          }
     code << %{        loop do                                        }
     code << %{          if eval_executed                                                }
-    code << %{            eval_caused_break = false                                           }
+    code << %{            no_more_matches = false                                           }
     code << %{            break                                            }
     code << %{          end                                             }
     code << %{          eval_executed = true                                              }
@@ -540,21 +549,21 @@ END
     code << %{            matches << $~                            }
     code << %{          end                                            }
     code << %{          line = $_                                }
-    code << %{          eval_caused_break = false                                           }
+    code << %{          no_more_matches = false                                           }
     code << %{          break                                         }
     code << %{        end                                           }
-    code << %{      end                                               }
-                  else
-                    if opt[:print_output]
-    code << %{        line.scan(re){ matches << eval(opt[:print_output]) }                        }
                     else
-    code << %{        line.scan(re){ matches << $~  }                                           }
+                      if opt[:print_output]
+    code << %{          line.scan(re){ matches << eval(opt[:print_output]) }                        }
+                      else
+    code << %{          line.scan(re){ matches << $~  }                                           }
+                      end
                     end
-                  end
-                  if opt[:print_match]
-    code << %{      matches.each{|md| puts md.to_s  }                                            }
-                  end
-    code << %{    count += matches.size                                                  }
+                    if opt[:print_match]
+    code << %{        matches.each{|md| puts md.to_s  }                                            }
+                    end
+    code << %{      count += matches.size                                                  }
+    code << %{    end  } if needs_no_more_matches
                   if opt[:invert_match]
                     if opt[:print_filename] 
     code << %{        unless displayed_filename                                   }
@@ -565,6 +574,9 @@ END
     code << %{        end                                                               }
                     end
     code << %{      if matches.empty?                                                 }
+                      if needs_inverse_count
+    code << %{          inverse_count += 1                                          }
+                      end
                       if opt[:print_highlighted]
                         if opt[:print_line_number]
     code << %{            print "\#{$..to_s.rjust(4)}|"                            }
@@ -581,7 +593,7 @@ END
                         if opt[:before_context] > 0 
     code << %{            if print_num == 0                                                 }
     code << %{              before_context << [$., line]                                   }
-    code << %{              if before_context.length > before_context_size                            }
+    code << %{              if before_context.length >  #{opt[:before_context]}                  }
     code << %{                before_context.shift                                        }
     code << %{              end                                                               }
     code << %{            end                                                               }
@@ -622,39 +634,32 @@ END
                         if opt[:print_line_number]
     code << %{            print  "\#{$..to_s.rjust(4)}|"                                   }
                         elsif opt[:print_file_each_line]
-    code << %{            fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")                            }
     code << %{            print fn_str + "\#{$.}:"                            }
                         end
     code << %{          print_highlighted(line, matches)                            }
                       end
     code << %{      end                                                                      }
                     if opt[:max_count] 
-    code << %{        if count >= opt[:max_count]                                          }
-    code << %{          break                                                               }
-    code << %{        end                                                               }
+    code << %{        no_more_matches = true if count >= opt[:max_count]  }
+                    end
+                    if needs_no_more_matches and not needs_inverse_count
+    code << %{        break if no_more_matches and print_num == 0 }
                     end
                   end
     code << %{  end                                                                      }
     code << %{  f.close if f === File                                                        }
                 if opt[:print_num_matches]
                   if opt[:invert_match]
-    code << %{      puts "\#{fn}:\#{$.-count}"                                                 }
+    code << %{      puts "\#{fn}:\#{inverse_count}"                                           }
                   else       
-    code << %{      if count > 0                                        }
-    code << %{        puts "\#{fn}:\#{count}"                           }
-    code << %{      end                                                 }
+    code << %{      puts "\#{fn}:\#{count}" if count > 0                       }
                   end
                 end
                 if opt[:print_file_if_match]
-    code << %{    if count > 0                                                               }
-    code << %{      puts fn                                                               }
-    code << %{    end                                                                      }
+    code << %{    puts fn if count > 0                                                               }
                 end
-    
                 if opt[:print_file_if_no_match]
-    code << %{    if count == 0                                                               }
-    code << %{      puts fn                                                                      }
-    code << %{    end                                                                      }
+    code << %{    puts fn if count == 0                                                               }
                 end 
     code << %{end }
     module_eval code.join("\n")
