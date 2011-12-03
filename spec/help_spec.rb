@@ -1,6 +1,4 @@
-
-
-require File.dirname(__FILE__) + "/spec_helpers"
+require "spec_helper"
 
 describe "Rak", "help and errors" do
   before(:all) do

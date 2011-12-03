@@ -1,8 +1,9 @@
 require 'fileutils'
+require 'rbconfig'
 require "pathname"
 
 HERE = Pathname(__FILE__).parent.expand_path
-require(HERE.join("../lib/rak"))
+require HERE.join("../lib/rak").to_s
 
 def strip_ansi(str)
   str.gsub /\033\[(\d;)?\d+m/, ""
@@ -25,7 +26,7 @@ def rak(argstring="", opts={})
     cmd = "#{ruby_bin} #{bin_rak} #{argstring}"
     cmd = "#{opts[:pipe]} | #{cmd}" if opts[:pipe]
     ENV['RAK_TEST'] = "true" unless opts[:test_mode] == false
-    dir = opts[:dir] || HERE+"example"
+    dir = opts[:dir] || HERE + "example"
     Dir.chdir(dir) do
       %x{#{cmd}}
     end    
@@ -37,3 +38,4 @@ end
 def sort_lines(str)
   str.split("\n").sort.join("\n")
 end
+   

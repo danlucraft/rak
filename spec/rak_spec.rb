@@ -1,8 +1,5 @@
 
-require 'fileutils'
-require 'rbconfig'
-
-require File.dirname(__FILE__) + "/spec_helpers"
+require "spec_helper"
 
 describe "Rak", "with no options" do 
   it "prints all matches from files in the current directory" do
