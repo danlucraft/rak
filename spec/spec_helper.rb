@@ -5,12 +5,20 @@ require "pathname"
 HERE = Pathname(__FILE__).parent.expand_path
 require HERE.join("../lib/rak").to_s
 
-def strip_ansi(str)
-  str.gsub /\033\[(\d;)?\d+m/, ""
-end
+class String
+  def shell_escape
+    return "''" if empty?
+    return dup unless self =~ /[^0-9A-Za-z+,.\/:=@_-]/
+    gsub(/(')|[^']+/) { $1 ? "\\'" : "'#{$&}'"}
+  end
 
-def asterize_ansi(str)
-  str.gsub /(\033\[(\d;)?\d+m)+/, "*"
+  def lines
+    result = []
+    each_line do |line|
+      result << line
+    end
+    result
+  end
 end
 
 def ruby_bin
@@ -20,22 +28,25 @@ def ruby_bin
   )
 end
 
-def rak(argstring="", opts={})
+def bin_rak
+  HERE.parent.join("bin/rak")
+end
+
+def rak(args="", opts={})
   begin
-    bin_rak = HERE.parent.join("bin/rak")
-    cmd = "#{ruby_bin} #{bin_rak} #{argstring}"
+    unless args.is_a?(String)
+      args = args.map{|str| str.shell_escape}.join(" ")
+    end
+    cmd = "#{ruby_bin} #{bin_rak} #{args}"
     cmd = "#{opts[:pipe]} | #{cmd}" if opts[:pipe]
     ENV['RAK_TEST'] = "true" unless opts[:test_mode] == false
-    dir = opts[:dir] || HERE + "example"
-    Dir.chdir(dir) do
+    dir = opts[:dir] || HERE+"example"
+    output = Dir.chdir(dir) do
       %x{#{cmd}}
-    end    
+    end
+    output = output.gsub(/(?:\033\[(?:\d;)?\d+m)+/, opts[:ansi]||'*')
+    output.gsub(/^(?!$)/, "      ")
   ensure
     ENV.delete('RAK_TEST')
   end
 end
-
-def sort_lines(str)
-  str.split("\n").sort.join("\n")
-end
-   
