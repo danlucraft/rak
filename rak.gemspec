@@ -1,10 +1,10 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rak}
-  s.version = "1.2"
+  s.version = "1.3"
 
   s.authors = ["Daniel Lucraft"]
-  s.date = %q{2008-02-03}
+  s.date = %q{2011-12-03}
   s.default_executable = %q{rak}
   s.description = <<-END
     Grep replacement, recursively scans directories to match a given Ruby regular expression. Prints highlighted results.
