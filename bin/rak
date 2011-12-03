@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: binary
 
 require 'rubygems'
 
@@ -482,7 +483,7 @@ END
     code << %{    before_context_size = opt[:before_context]    }
                 end
     code << %{  if fn.is_a? String              }
-    code << %{    f = File.open(fn, "r")        }
+    code << %{    f = File.open(fn, "rb")       }
     code << %{  elsif fn.is_a? IO               }
     code << %{    f = fn                        }
     code << %{  end                             }
@@ -606,7 +607,7 @@ END
     code << %{    end                                                                      }
                 end 
     code << %{end }
-    module_eval code.join("\n")
+    module_eval code.join("\n"), "#{__FILE__} (#{__LINE__})"
   end
   
   def self.print_highlighted(prefix, line, matches)
