@@ -57,6 +57,7 @@ END
     :hh          => %w( .h ),
     :html        => %w( .htm .html .shtml ),
     :lisp        => %w( .lisp ),
+    :lua         => %w( .lua ),
     :java        => %w( .java properties ),
     :js          => %w( .js ),
     :jsp         => %w( .jsp .jspx .jhtm .jhtml ),
