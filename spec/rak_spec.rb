@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*-
 
 require "spec_helper"
 
@@ -69,6 +70,13 @@ describe "Rak", "with no options" do
     rak("Canceron").should == <<-END
       *Rakefile*
          1|rakefile rakefile *Canceron* rakefile
+    END
+  end
+  
+  it "accpets utf-8 string" do
+    rak("☃").should == <<-END
+      *dir1/bar.rb*
+         5|*☃*
     END
   end
 end
@@ -185,7 +193,7 @@ describe "Rak", "options" do
          2|bar bar bar bar Pikon bar
          3| 
          4|
-         5|
+         5|☃
          6|
          7|
          8|
@@ -500,6 +508,9 @@ describe "Rak", "with --eval" do
 
   it "should support break" do
     rak(%Q[--eval 'break if $. == 2']).should == <<-END
+      *Rakefile*
+         1|*rakefile rakefile Canceron rakefile*
+
       *dir1/bar.rb*
          1|*
 
@@ -508,9 +519,6 @@ describe "Rak", "with --eval" do
 
       *quux.py*
          1|*quux quux quux quux Virgon quux quux*
-
-      *Rakefile*
-         1|*rakefile rakefile Canceron rakefile*
 
       *shebang*
          1|*#!/usr/bin/env ruby*

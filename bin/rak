@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: binary
+# -*- encoding: UTF-8 -*-
 
 require 'rubygems'
 require "pathname"
@@ -413,7 +413,7 @@ END
       relevant = !relevant if opt[:reverse_relevance]
       yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
     elsif path.directory?
-      path.children.each do |fn|
+      path.children.sort.each do |fn|
         next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
         next if fn.directory? and not opt[:descend]
         next if fn.symlink? and not opt[:follow_symlinks]
@@ -549,16 +549,20 @@ END
     code << %{            $_ =~ /^.*$/ unless $~                       }
     code << %{            matches << $~                            }
     code << %{          end                                            }
-    code << %{          line = $_                                }
+    code << %{          line = $_                                           }
     code << %{          no_more_matches = false                                           }
     code << %{          break                                         }
     code << %{        end                                           }
                     else
+    code << %{        line.force_encoding 'utf-8'                                        } if RUBY_VERSION >= '1.9'
+    code << %{        begin                                        } if RUBY_VERSION >= '1.9'
                       if opt[:print_output]
     code << %{          line.scan(re){ matches << eval(opt[:print_output]) }                        }
                       else
     code << %{          line.scan(re){ matches << $~  }                                           }
                       end
+    code << %{        rescue ArgumentError                                       } if RUBY_VERSION >= '1.9'
+    code << %{        end                                       } if RUBY_VERSION >= '1.9'
                     end
                     if opt[:print_match]
     code << %{        matches.each{|md| puts md.to_s  }                                            }
