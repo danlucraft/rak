@@ -413,7 +413,7 @@ END
       relevant = !relevant if opt[:reverse_relevance]
       yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
     elsif path.directory?
-      path.children.each do |fn|
+      path.children.sort.each do |fn|
         next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
         next if fn.directory? and not opt[:descend]
         next if fn.symlink? and not opt[:follow_symlinks]

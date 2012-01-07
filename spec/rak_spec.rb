@@ -500,6 +500,9 @@ describe "Rak", "with --eval" do
 
   it "should support break" do
     rak(%Q[--eval 'break if $. == 2']).should == <<-END
+      *Rakefile*
+         1|*rakefile rakefile Canceron rakefile*
+
       *dir1/bar.rb*
          1|*
 
@@ -508,9 +511,6 @@ describe "Rak", "with --eval" do
 
       *quux.py*
          1|*quux quux quux quux Virgon quux quux*
-
-      *Rakefile*
-         1|*rakefile rakefile Canceron rakefile*
 
       *shebang*
          1|*#!/usr/bin/env ruby*
