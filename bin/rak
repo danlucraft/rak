@@ -530,9 +530,6 @@ END
     code << %{  end                             }
   
     code << %{  f.each_line do |line|                                         }
-                  if RUBY_VERSION >= '1.9'
-    code << %{    line.force_encoding 'utf-8'                                        }
-                  end
     code << %{    matches = []                          }
                   
     code << %{    unless no_more_matches }  if needs_no_more_matches
@@ -557,11 +554,15 @@ END
     code << %{          break                                         }
     code << %{        end                                           }
                     else
+    code << %{        line.force_encoding 'utf-8'                                        } if RUBY_VERSION >= '1.9'
+    code << %{        begin                                        } if RUBY_VERSION >= '1.9'
                       if opt[:print_output]
     code << %{          line.scan(re){ matches << eval(opt[:print_output]) }                        }
                       else
     code << %{          line.scan(re){ matches << $~  }                                           }
                       end
+    code << %{        rescue ArgumentError                                       } if RUBY_VERSION >= '1.9'
+    code << %{        end                                       } if RUBY_VERSION >= '1.9'
                     end
                     if opt[:print_match]
     code << %{        matches.each{|md| puts md.to_s  }                                            }
