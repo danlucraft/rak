@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: binary
+# -*- encoding: UTF-8 -*-
 
 require 'rubygems'
 require "pathname"
@@ -530,6 +530,9 @@ END
     code << %{  end                             }
   
     code << %{  f.each_line do |line|                                         }
+                  if RUBY_VERSION >= '1.9'
+    code << %{    line.force_encoding 'utf-8'                                        }
+                  end
     code << %{    matches = []                          }
                   
     code << %{    unless no_more_matches }  if needs_no_more_matches
@@ -549,7 +552,7 @@ END
     code << %{            $_ =~ /^.*$/ unless $~                       }
     code << %{            matches << $~                            }
     code << %{          end                                            }
-    code << %{          line = $_                                }
+    code << %{          line = $_                                           }
     code << %{          no_more_matches = false                                           }
     code << %{          break                                         }
     code << %{        end                                           }
