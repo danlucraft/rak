@@ -1,10 +1,10 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rak}
-  s.version = "1.3"
+  s.version = "1.4"
 
   s.authors = ["Daniel Lucraft"]
-  s.date = %q{2011-12-03}
+  s.date = %q{2012-01-15}
   s.default_executable = %q{rak}
   s.description = <<-END
     Grep replacement, recursively scans directories to match a given Ruby regular expression. Prints highlighted results.
@@ -16,6 +16,6 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://rak.rubyforge.org}
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{rak}
-  s.rubygems_version = %q{1.3.0}
+  s.rubygems_version = %q{1.4.0}
   s.summary = %q{A grep replacement in Ruby, type "rak pattern".}
 end
