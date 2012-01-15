@@ -40,7 +40,11 @@ def rak(args="", opts={})
     cmd = "#{ruby_bin} #{bin_rak} #{args}"
     cmd = "#{opts[:pipe]} | #{cmd}" if opts[:pipe]
     ENV['RAK_TEST'] = "true" unless opts[:test_mode] == false
-    dir = opts[:dir] || HERE+"example"
+    if opts[:dir]
+      dir = HERE + opts[:dir]
+    else
+      dir = HERE + "example"
+    end
     output = Dir.chdir(dir) do
       %x{#{cmd}}
     end

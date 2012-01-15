@@ -175,7 +175,7 @@ END
                             [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ],
                             [ '--eval', GetoptLong::REQUIRED_ARGUMENT ]
                             )
-
+                            
     opt[:max_count] = nil
     opt[:only_print_filelist] = false
     opt[:print_filename] = true
@@ -489,6 +489,9 @@ END
       str = "(?:" + str + ")$"
     end
     str = str.gsub("~bang", "!").gsub("~ques", "?")
+    if str.respond_to?(:force_encoding)
+      str.force_encoding("ASCII-8BIT")
+    end
     if $use_onig
       flags = opt[:ignore_case] ? Oniguruma::OPTION_IGNORECASE : nil
       Oniguruma::ORegexp.new(str, :options => flags)

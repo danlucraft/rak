@@ -1,4 +1,4 @@
-
+#encoding: utf-8
 require "spec_helper"
 
 describe "Rak", "with no options" do 
@@ -69,6 +69,13 @@ describe "Rak", "with no options" do
     rak("Canceron").should == <<-END
       *Rakefile*
          1|rakefile rakefile *Canceron* rakefile
+    END
+  end
+  
+  it "matches unicode snowmen" do
+    rak("☃", :dir => "example2").should == <<-END
+      *snowman.txt*
+         2|# *☃* 
     END
   end
 end
