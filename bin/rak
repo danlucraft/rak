@@ -101,7 +101,7 @@ END
     :yaml          => %w( .yaml .yml ),
   }
   
-  VC_DIRS = %w(blib CVS _darcs .git .pc RCS SCCS .svn pkg)
+  VC_DIRS = %w(blib CVS _darcs .git .hg .pc RCS SCCS .svn pkg)
   
   class << self
     attr_reader :opt
@@ -755,7 +755,7 @@ File inclusion/exclusion:
   -g REGEX              Only search in files matching REGEX.
   -k REGEX              Only search in files not matching REGEX.
   -a, --all             All files, regardless of extension (but still skips
-                        blib, pkg, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
+                        blib, pkg, CVS, _darcs, .git, .hg, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
   --type=ruby           Include only Ruby files.
   --noruby              Exclude Ruby files.
