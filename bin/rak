@@ -32,21 +32,21 @@ end
 
 class Rak
   VERSION = "1.4"
-  
+
   FILE_COLOUR = "\033[1;31m"
   MATCH_COLOUR = "\033[1;37m\033[41m"
   CLEAR_COLOURS = "\033[0m"
-  
+
   VERSION_INFO=<<END
 rak #{VERSION}
 
-Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
+Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved.
 Based on the perl tool 'ack' by Andy Lester.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Ruby.
 END
-  
+
   FILE_TYPES = {
     :actionscript  => %w( .as .mxml ),
     :ada           => %w( .ada .adb .ads ),
@@ -57,7 +57,7 @@ END
     :cfmx          => %w( .cfc .cfm .cfml ),
     :cpp           => %w( .C .H .cc .cpp .cxx .h .hh .hpp .hxx .m ),
     :csharp        => %w( .cs ),
-    :css           => %w( .css ),
+    :css           => %w( .css .scss .sass ),
     :elisp         => %w( .el ),
     :erlang        => %w( .erl .hrl ),
     :fortran       => %w( .f .f03 .f77 .f90 .f95 .for .fpp .ftn ),
@@ -100,13 +100,13 @@ END
     :xml           => %w( .dtd .ent .xml .xslt ),
     :yaml          => %w( .yaml .yml ),
   }
-  
+
   VC_DIRS = %w(blib CVS _darcs .git .hg .pc RCS SCCS .svn pkg)
-  
+
   class << self
     attr_reader :opt
   end
-  
+
   def self.compile_regexp(str)
     if $use_onig
       Oniguruma::ORegexp.new(str)
@@ -114,14 +114,14 @@ END
       Regexp.new(str)
     end
   end
-  
+
   def self.search
     @opt = {}
 
     # file types
     opt[:includes] = []
     opt[:excludes] = []
-    
+
     FILE_TYPES.each do |type, exts|
       if ARGV.delete('--'+type.to_s)
         exts.each do |ext|
@@ -134,7 +134,7 @@ END
         end
       end
     end
-    
+
       opts = GetoptLong.new(
                             [ '--help', GetoptLong::OPTIONAL_ARGUMENT ],
                             [ '--max-count', '-m', GetoptLong::REQUIRED_ARGUMENT ],
@@ -175,7 +175,7 @@ END
                             [ '-e', '--line-end', GetoptLong::NO_ARGUMENT ],
                             [ '--eval', GetoptLong::REQUIRED_ARGUMENT ]
                             )
-                            
+
     opt[:max_count] = nil
     opt[:only_print_filelist] = false
     opt[:print_filename] = true
@@ -207,8 +207,8 @@ END
     opt[:neg_filename_regex] = nil
     opt[:reverse_relevance] = false
     opt[:eval] = nil
-    
-    # if redirected (RAK_TEST allows us to redirect in testing and still 
+
+    # if redirected (RAK_TEST allows us to redirect in testing and still
     # get the non-redirected defaults).
     unless STDOUT.isatty or ENV['RAK_TEST'] == "true"
       opt[:colour] = false
@@ -216,7 +216,7 @@ END
       opt[:print_filename] = false
       opt[:print_line_number] = false
     end
-    
+
     begin
       opts.each do |option, arg|
         case option
@@ -381,7 +381,7 @@ END
       end
     end
   end
-  
+
   def self.extension_regexp(extensions)
     return nil if extensions.empty?
     Regexp.compile('(?:' + extensions.map{|x| Regexp.escape(x)}.join("|") + ')\z')
@@ -435,7 +435,7 @@ END
     elsif todo.size == 1 and todo[0].file?
       opt[:print_filename] = false
     end
-    
+
     if opt[:sort_files]
       sortme = []
       todo.each do |item|
@@ -471,7 +471,7 @@ END
       nil
     end
   end
-    
+
   def self.compile_pattern(str)
     if opt[:literal]
       str = Regexp.quote(str)
@@ -500,7 +500,7 @@ END
       Regexp.new(str, flags)
     end
   end
-  
+
   # this is tricky thing. Ignore the "code <<" to see the
   # logic. Because the options never change we conditionally compile
   # the match method based on them. This is gives a 2x speedup over
@@ -508,7 +508,7 @@ END
   def self.compile_match_file
     needs_no_more_matches = (opt[:max_count] or opt[:eval])
     needs_inverse_count = (opt[:print_num_matches] and opt[:invert_match])
-        
+
     code = []
     code << %{def self.match_file(re, fn, file_separator)        }
     code << %{  displayed_filename = false       }
@@ -531,10 +531,10 @@ END
     code << %{  elsif fn.is_a? IO               }
     code << %{    f = fn                        }
     code << %{  end                             }
-  
+
     code << %{  f.each_line do |line|                                         }
     code << %{    matches = []                          }
-                  
+
     code << %{    unless no_more_matches }  if needs_no_more_matches
                     if opt[:eval]
     code << %{        $_ = line.chomp                            }
@@ -569,7 +569,7 @@ END
     code << %{      count += matches.size                                                  }
     code << %{    end  } if needs_no_more_matches
                   if opt[:invert_match]
-                    if opt[:print_filename] 
+                    if opt[:print_filename]
     code << %{        unless displayed_filename                                   }
     code << %{          print file_separator                           }
     code << %{          file_separator.replace("\\n")                             }
@@ -594,7 +594,7 @@ END
     code << %{          puts line                                                 }
                       end
                       if opt[:use_context]
-                        if opt[:before_context] > 0 
+                        if opt[:before_context] > 0
     code << %{            if print_num == 0                                                 }
     code << %{              before_context << [$., line]                                   }
     code << %{              if before_context.length >  #{opt[:before_context]}                  }
@@ -630,7 +630,7 @@ END
     code << %{            puts before_line.expand_tabs                                     }
     code << %{          end                                                               }
     code << %{          before_context = []                                                 }
-                      end       
+                      end
                       if opt[:print_output]
     code << %{          matches.each {|m| puts m}                                          }
                       end
@@ -643,7 +643,7 @@ END
     code << %{          print_highlighted(line, matches)                            }
                       end
     code << %{      end                                                                      }
-                    if opt[:max_count] 
+                    if opt[:max_count]
     code << %{        no_more_matches = true if count >= opt[:max_count]  }
                     end
                     if needs_no_more_matches and not needs_inverse_count
@@ -655,7 +655,7 @@ END
                 if opt[:print_num_matches]
                   if opt[:invert_match]
     code << %{      puts "\#{fn}:\#{inverse_count}"                                           }
-                  else       
+                  else
     code << %{      puts "\#{fn}:\#{count}" if count > 0                       }
                   end
                 end
@@ -664,11 +664,11 @@ END
                 end
                 if opt[:print_file_if_no_match]
     code << %{    puts fn if count == 0                                                               }
-                end 
+                end
     code << %{end }
     module_eval code.join("\n"), "#{__FILE__} (#{__LINE__})"
   end
-  
+
   def self.print_highlighted(line, matches)
     matches = matches.map{|md| md.offset(0)}
     cuts = [0, matches, line.size].flatten
@@ -683,7 +683,7 @@ END
     end
     print "\n" unless line[-1,1] == "\n"
   end
-  
+
   def self.unknown_type(type)
     puts "rak: Unknown --type \"#{type}\""
     puts "rak: See rak --help types"
@@ -734,7 +734,7 @@ Search output:
 
   --[no]colour          Highlight the matching text (default: on unless
                         output is redirected, or on Windows)
-                                             
+
   -A NUM, --after-context=NUM
                         Print NUM lines of trailing context after matching
                         lines.
