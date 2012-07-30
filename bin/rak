@@ -57,7 +57,7 @@ END
     :cfmx          => %w( .cfc .cfm .cfml ),
     :cpp           => %w( .C .H .cc .cpp .cxx .h .hh .hpp .hxx .m ),
     :csharp        => %w( .cs ),
-    :css           => %w( .css ),
+    :css           => %w( .css .sass .scss ),
     :elisp         => %w( .el ),
     :erlang        => %w( .erl .hrl ),
     :fortran       => %w( .f .f03 .f77 .f90 .f95 .for .fpp .ftn ),
