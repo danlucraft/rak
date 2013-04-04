@@ -420,7 +420,7 @@ END
           next if fn.symlink? and not opt[:follow_symlinks]
           find_all_files(fn, &blk)
         rescue Errno::EACCES
-          puts "Permission denied error on directory \"#{fn}\""
+          puts "Permission denied error on directory \"#{fn}\". Skipping."
         end
 
       end
