@@ -563,7 +563,8 @@ END
     code << %{        unless displayed_filename                                             } 
     code << %{          print file_separator                                                } 
     code << %{          file_separator.replace("\\n")                                       } 
-    code << %{          puts fn.cyan                                                        } 
+    code << %{          puts fn.cyan if opt[:colour]                                        } 
+    code << %{          puts fn if not opt[:colour]                                         } 
     code << %{          displayed_filename = true                                           } 
     code << %{        end                                                                   } 
     end
@@ -573,7 +574,8 @@ END
     end
     if opt[:print_highlighted]
     if opt[:print_line_number]
-    code << %{            print "\#{$..to_s.rjust(4)} ".yellow + " |*".yellow               } 
+    code << %{            print "\#{$..to_s.rjust(4)} ".yellow + " |*".yellow if opt[:colour]    } 
+    code << %{            print "\#{$..to_s.rjust(4)} " + " |*" if not opt[:colour]              } 
     end
     code << %{          puts line.expand_tabs                                               } 
     end
@@ -596,7 +598,8 @@ END
     code << %{            print_num -= 1                                                    } 
     if opt[:print_highlighted]
     if opt[:print_line_number]
-    code << %{                print "\#{$..to_s.rjust(4)} ".yellow + "v ".yellow           } 
+    code << %{                print "\#{$..to_s.rjust(4)} ".yellow + "v ".yellow if opt[:colour] } 
+    code << %{                print "\#{$..to_s.rjust(4)} " + "v " if not opt[:colour]           } 
     end
     code << %{              puts line.expand_tabs                                           }  # after_context
     code << %{            end                                                               } 
@@ -608,14 +611,16 @@ END
     code << %{          unless displayed_filename                                           } 
     code << %{            print file_separator                                              } 
     code << %{            file_separator.replace("\\n")                                     } 
-    code << %{            puts fn.cyan                                                      } 
+    code << %{            puts fn.cyan if opt[:colour]                                      } 
+    code << %{            puts fn if not opt[:colour]                                       } 
     code << %{            displayed_filename = true                                         } 
     code << %{          end                                                                 } 
     end
     if opt[:before_context] > 0
     code << %{          before_context.each do |before_i, before_line|                      } 
     if opt[:print_line_number]
-    code << %{              print "\#{before_i.to_s.rjust(4)}".yellow + " ^ ".yellow        } 
+    code << %{              print "\#{before_i.to_s.rjust(4)}".yellow + " ^ ".yellow if opt[:colour]  } 
+    code << %{              print "\#{before_i.to_s.rjust(4)}" + " ^ " if not opt[:colour]            } 
     end
     code << %{            puts before_line.expand_tabs                                      } 
     code << %{          end                                                                 } 
@@ -626,9 +631,11 @@ END
     end
     if opt[:print_highlighted]
     if opt[:print_line_number]
-    code << %{            print  "\#{$..to_s.rjust(4)}".yellow + " | ".yellow               } 
+    code << %{            print  "\#{$..to_s.rjust(4)}".yellow + " | ".yellow if opt[:colour]    } 
+    code << %{            print  "\#{$..to_s.rjust(4)}" + " | " if not opt[:colour]              } 
     elsif opt[:print_file_each_line]
-    code << %{            print fn_str.rjust(10).cyan + "\#{$.}".yellow + " | ".yellow      } 
+    code << %{            print fn_str.rjust(10).cyan + "\#{$.}".yellow + " | ".yellow  if opt[:colour]    } 
+    code << %{            print fn_str.rjust(10) + "\#{$.}" + " | "  if not opt[:colour]    } 
     end
     code << %{          print_highlighted(line, matches)                                    } 
     end
@@ -669,7 +676,8 @@ END
     matches.each do |str_start, str_end|
       matched_string ||= line[str_start...str_end]
       final_string << line[column...str_start]
-      final_string << matched_string.red.on_light_blue
+      final_string << matched_string.red if opt[:colour]
+      final_string << matched_string if not opt[:colour]
       column = str_end
     end
     final_string << line[column..line.size]
