@@ -35,15 +35,16 @@
 # ------------------------------------------------------------------------------ 
 
 require 'rubygems'
-require 'colorize'
 require "pathname"
 
-if RUBY_PLATFORM =~ /mswin|mingw/
-  begin
-    require 'win32console'
-  rescue LoadError
-    # ARGV << "--nocolour"
-  end
+# Require the colorize gem, if available
+begin
+  require 'colorize'
+rescue LoadError
+  puts 'Colorize gem not found. To display Rak results in color, please'
+  puts 'install it: gem install colorize'
+  puts ''
+  ARGV << "--nocolour"
 end
 
 require 'getoptlong'
@@ -81,6 +82,7 @@ END
   FILE_TYPES = {
     :actionscript  => %w( .as .mxml ),
     :ada           => %w( .ada .adb .ads ),
+    :asp           => %w( .asp .aspx ),
     :asm           => %w( .S .asm .s ),
     :awk           => %w( .awk ),
     :batch         => %w( .bat .cmd ),
