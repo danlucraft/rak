@@ -63,6 +63,10 @@ class Rak
   VERSION = "1.4"
   VERSION_INFO=<<END
 rak #{VERSION}
+Copyright 2013-#{Time.now.year} Eugene Ching, all rights reserved. 
+Based on the original Rak tool by Daniel Lucraft.
+
+Original Credits:
 
 Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
 Based on the perl tool 'ack' by Andy Lester.
