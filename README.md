@@ -22,10 +22,17 @@ ignore-case mode is default, as I feel that such a case is more common.
 
 ### Gem and Installation
 
-This is released as a Gem under eugeneching-rak. Hence, the easiest
+This is released as a Gem under rak-eugeneching. Hence, the easiest
 way to install this fork of Rak is to do a:
 
-    gem install eugeneching-rak
+    gem install rak-eugeneching
+
+Alternatively, you may clone this Github project, and do a
+
+    gem build rak.gemspec
+    gem install rak-eugeneching-1.5.gem
+
+to use the Gem by builing and installing it locally.
 
 ### Features
   
