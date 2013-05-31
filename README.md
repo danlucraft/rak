@@ -30,7 +30,7 @@ way to install this fork of Rak is to do a:
 Alternatively, you may clone this Github project, and do a
 
     gem build rak.gemspec
-    gem install rak-eugeneching-1.5.gem
+    gem install rak-eugeneching-<version>.gem
 
 to use the Gem by builing and installing it locally.
 
