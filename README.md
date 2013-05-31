@@ -1,5 +1,3 @@
-Rak
-
 ### What is Rak
 
 Rak is a grep replacement in pure Ruby. It accepts Ruby syntax regular 
