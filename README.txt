@@ -1,6 +1,59 @@
-rak
-http://rubyforge.org/projects/rak
-Daniel Lucraft (http://danlucraft.com/blog/)
+Rak
+
+### What is Rak
+
+Rak is a grep replacement in pure Ruby. It accepts Ruby syntax regular 
+expressions and automatically recurses directories, skipping .svn/, .cvs/, 
+pkg/ and more things you don't care about. It is based on the Perl tool 
+ack by Andy Lester.
+
+### Original credits
+
+Rak was originally implemented by Daniel Lucraft, whose blog may be found
+at http://danlucraft.com/blog/. Full credits to the original version to
+him. His project may be found at https://github.com/danlucraft/rak.
+
+### This version of Rak
+
+This is my improvement of the original implementation of Rak, for
+stability, as well as UI improvements. I also added column handling so
+that editors interacting with Rak, or otherwise, may point directly to
+the line and word that was Rak'ed for. Column is only shown for the first
+matching word, if there are multiple, for a given line. Finally, 
+ignore-case mode is default, as I feel that such a case is more common.
+
+### Gem and Installation
+
+This is released as a Gem under eugeneching-rak. Hence, the easiest
+way to install this fork of Rak is to do a:
+
+    gem install eugeneching-rak
+
+### Features
+  
+From original Rak:
+  * Ruby regular expression syntax (uses oniguruma gem if installed).
+  * Highlighted output.
+  * Automatically recurses down the current directory or any given
+    directories.
+  * Skips version control directories, backups like '~' and '#' and your
+  * ruby project's pkg directory.
+  * Allows inclusion and exclusion of files based on types.
+  * Many options similar to grep.
+
+Added features:
+  * Ignore case mode is default behaviour.
+  * UI improvements, in terms of display, alignment and coloring
+  * Detects and displays column of match
+  * Various fixes
+
+### Author
+
+Eugene Ching (codejury)
+Email:   eugene@enegue.com
+Web:     www.codejury.com
+Twitter: @eugeneching
+
 
 == DESCRIPTION:
 
