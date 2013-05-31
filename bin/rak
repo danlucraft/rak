@@ -17,8 +17,10 @@
 #  stability, as well as UI improvements. I also added column handling so
 #  that editors interacting with Rak, or otherwise, may point directly to
 #  the line and word that was Rak'ed for. Column is only shown for the first
-#  matching word, if there are multiple, for a given line. Finally, 
-#  ignore-case mode is default, as I feel that such a case is more common.
+#  matching word, if there are multiple, for a given line. 
+#
+#  Behaviour changes: 
+#    - ignore-case mode is default, as I feel that such a case is more common.
 #
 #  -- Author
 #
@@ -60,19 +62,17 @@ class String
 end
 
 class Rak
-  VERSION = "1.4"
+  VERSION = "1.5"
   VERSION_INFO=<<END
-rak #{VERSION}
-Copyright 2013-#{Time.now.year} Eugene Ching, all rights reserved. 
-Based on the original Rak tool by Daniel Lucraft.
+Rak #{VERSION}
+Copyright 2013 - #{Time.now.year} Eugene Ching, all rights reserved. 
+Based on the original Rak tool, credits below.
 
 Original Credits:
-
-Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
-Based on the perl tool 'ack' by Andy Lester.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Ruby.
+  Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
+  Based on the perl tool 'ack' by Andy Lester. This program is free 
+  software; you can redistribute it and/or modify it under the same 
+  terms as Ruby.
 END
   
   FILE_TYPES = {
@@ -119,7 +119,7 @@ END
     :sql           => %w( .ctl .sql ),
     :tcl           => %w( .itcl .itk .tcl ),
     :tex           => %w( .cls .sty .tex ),
-    :text          => %w( .text .txt README ),
+    :text          => %w( .text .txt README .md .config .markdown .otl .votl ),
     :tt            => %w( .tt .tt2 .ttml ),
     :vala          => %w( .vala .vapi ),
     :vb            => %w( .bas .cls .ctl .frm .resx .vb ),
@@ -127,6 +127,7 @@ END
     :vim           => %w( .vim ),
     :xml           => %w( .dtd .ent .xml .xslt ),
     :yaml          => %w( .yaml .yml ),
+    :everything    => %w( . ),
   }
   
   VC_DIRS = %w(blib CVS _darcs .git .pc RCS SCCS .svn pkg)
