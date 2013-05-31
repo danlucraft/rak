@@ -20,7 +20,10 @@
 #  matching word, if there are multiple, for a given line. 
 #
 #  Behaviour changes: 
-#    - ignore-case mode is default, as I feel that such a case is more common.
+#    - ignore-case mode is default, as such a is (presumably)
+#      a more common case
+#    - search in all files is the default, as opposed to only 
+#      recognized files
 #
 #  -- Author
 #
@@ -190,6 +193,7 @@ END
                             [ '--nocolour', GetoptLong::NO_ARGUMENT ],
                             [ '--color', GetoptLong::NO_ARGUMENT ],
                             [ '--nocolor', GetoptLong::NO_ARGUMENT ],
+                            [ '-j', '--noall', GetoptLong::NO_ARGUMENT ],
                             [ '-a', '--all', GetoptLong::NO_ARGUMENT ],
                             [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '--sort-files', GetoptLong::NO_ARGUMENT ],
@@ -227,7 +231,7 @@ END
     opt[:print_file_if_no_match] = false
     opt[:print_entire_line_if_no_match] = false
     opt[:colour] = true
-    opt[:all_files] = false
+    opt[:all_files] = true
     opt[:sort_files] = false
     opt[:follow_symlinks] = false
     opt[:after_context] = 0
@@ -331,6 +335,8 @@ END
           opt[:colour] = true
         when '-a'
           opt[:all_files] = true
+        when '-j'
+          opt[:all_files] = false
         when '--type'
           if arg[0..1] == "no"
             type = arg[2..-1]
@@ -751,6 +757,7 @@ Example: rak -i select
 
 Searching:
   -i, --ignore-case     Ignore case distinctions
+  -I, --case-sensitive  Do not ignore case distinctions
   -v, --invert-match    Invert match: select non-matching lines
   -w, --word-regexp     Force PATTERN to match only whole words
   -x, --line-regexp     Force PATTERN to match only whole lines
@@ -803,6 +810,7 @@ File inclusion/exclusion:
   -n                    No descending into subdirectories
   -g REGEX              Only search in files matching REGEX.
   -k REGEX              Only search in files not matching REGEX.
+  -j, --noall           Only search in recognized files extensions
   -a, --all             All files, regardless of extension (but still skips
                         blib, pkg, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
