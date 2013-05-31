@@ -1,6 +1,34 @@
 #!/usr/bin/env ruby
 # encoding: binary
 
+# ------------------------------------------------------------------------------ 
+#  Rak Gem.
+#
+#  Rak is a grep replacement in pure Ruby. It accepts Ruby syntax regular 
+#  expressions and automatically recurses directories, skipping .svn/, .cvs/, 
+#  pkg/ and more things you don't care about. It is based on the Perl tool 
+#  ack by Andy Lester.
+#
+#  Rak was originally implemented by Daniel Lucraft, whose blog may be found
+#  at http://danlucraft.com/blog/. Full credits to the original version to
+#  him. His project may be found at https://github.com/danlucraft/rak.
+#
+#  This is my improvement of the original implementation of Rak, for
+#  stability, as well as UI improvements. I also added column handling so
+#  that editors interacting with Rak, or otherwise, may point directly to
+#  the line and word that was Rak'ed for. Column is only shown for the first
+#  matching word, if there are multiple, for a given line. Finally, 
+#  ignore-case mode is default, as I feel that such a case is more common.
+#
+#  -- Author
+#
+#  Eugene Ching (codejury)
+#  Email:   eugene@enegue.com
+#  Web:     www.codejury.com
+#  Twitter: @eugeneching
+#
+# ------------------------------------------------------------------------------ 
+
 require 'rubygems'
 require 'colorize'
 require "pathname"
@@ -141,6 +169,7 @@ END
                             [ '-c', '--count', GetoptLong::NO_ARGUMENT ],
                             [ '-h', '--no-filename', GetoptLong::NO_ARGUMENT ],
                             [ '-i', '--ignore-case', GetoptLong::NO_ARGUMENT ],
+                            [ '-I', '--case-sensitive', GetoptLong::NO_ARGUMENT ],
                             [ '-v', '--invert-match', GetoptLong::NO_ARGUMENT ],
                             [ '-n', GetoptLong::NO_ARGUMENT ],
                             [ '-Q', '--literal', GetoptLong::NO_ARGUMENT ],
@@ -179,7 +208,7 @@ END
     opt[:print_output] = nil
     opt[:print_highlighted] = true
     opt[:print_num_matches] = false
-    opt[:ignore_case] = false
+    opt[:ignore_case] = true
     opt[:invert_match] = false
     opt[:descend] = true
     opt[:literal] = false
@@ -254,6 +283,8 @@ END
           opt[:print_file_each_line] = false
         when '-i'
           opt[:ignore_case] = true
+        when '-I'
+          opt[:ignore_case] = false
         when '-v'
           opt[:invert_match] = true
         when '-n'
@@ -574,8 +605,8 @@ END
     end
     if opt[:print_highlighted]
     if opt[:print_line_number]
-    code << %{            print "\#{$..to_s.rjust(4)} ".yellow + " |*".yellow if opt[:colour]    } 
-    code << %{            print "\#{$..to_s.rjust(4)} " + " |*" if not opt[:colour]              } 
+    code << %{            print "\#{$..to_s.rjust(4)} ".yellow + " | ".yellow if opt[:colour]    } 
+    code << %{            print "\#{$..to_s.rjust(4)} " + " | " if not opt[:colour]              } 
     end
     code << %{          puts line.expand_tabs                                               } 
     end
@@ -586,6 +617,9 @@ END
     code << %{          puts line                                                           } 
     end
     if opt[:use_context]
+
+    # Handle the before-context
+      
     if opt[:before_context] > 0
     code << %{            if print_num == 0                                                 } 
     code << %{              before_context << [$., line]                                    } 
@@ -597,11 +631,14 @@ END
     code << %{          if print_num > 0                                                    } 
     code << %{            print_num -= 1                                                    } 
     if opt[:print_highlighted]
-    if opt[:print_line_number]
-    code << %{                print "\#{$..to_s.rjust(4)} ".yellow + "v ".yellow if opt[:colour] } 
-    code << %{                print "\#{$..to_s.rjust(4)} " + "v " if not opt[:colour]           } 
+    
+    # Handle the after-context  
+      
+    if opt[:print_line_number]                                                                
+    code << %{                print "\#{$..to_s.rjust(4)} ".yellow + "     " + "v ".yellow if opt[:colour] } 
+    code << %{                print "\#{$..to_s.rjust(4)} " + "     " + "v " if not opt[:colour]           } 
     end
-    code << %{              puts line.expand_tabs                                           }  # after_context
+    code << %{              puts line.expand_tabs                                           } 
     code << %{            end                                                               } 
     end
     end
@@ -619,8 +656,8 @@ END
     if opt[:before_context] > 0
     code << %{          before_context.each do |before_i, before_line|                      } 
     if opt[:print_line_number]
-    code << %{              print "\#{before_i.to_s.rjust(4)}".yellow + " ^ ".yellow if opt[:colour]  } 
-    code << %{              print "\#{before_i.to_s.rjust(4)}" + " ^ " if not opt[:colour]            } 
+    code << %{              print "\#{before_i.to_s.rjust(4)}".yellow + "     " + " ^ ".yellow if opt[:colour]  } 
+    code << %{              print "\#{before_i.to_s.rjust(4)}" + "     " + " ^ ".ljust(5) if not opt[:colour]            } 
     end
     code << %{            puts before_line.expand_tabs                                      } 
     code << %{          end                                                                 } 
@@ -630,12 +667,18 @@ END
     code << %{          matches.each {|m| puts m}                                           } 
     end
     if opt[:print_highlighted]
+    
+    # Print all information on individual lines. This acts like a "raw mode"
+    # that is easily parsable.
+      
     if opt[:print_line_number]
-    code << %{            print  "\#{$..to_s.rjust(4)}".yellow + " | ".yellow if opt[:colour]    } 
-    code << %{            print  "\#{$..to_s.rjust(4)}" + " | " if not opt[:colour]              } 
+    code << %{            first_column_of_match = matches[0].begin(0) + 1}
+    code << %{            print  "\#{$..to_s}".rjust(4).yellow + ":" + "\#{first_column_of_match}".ljust(4).blue + " | ".yellow if opt[:colour]    }
+    code << %{            print  "\#{$..to_s}".rjust(4) + ":" + "\#{first_column_of_match}".ljust(4) + " | " if not opt[:colour]    } 
     elsif opt[:print_file_each_line]
-    code << %{            print fn_str.rjust(10).cyan + "\#{$.}".yellow + " | ".yellow  if opt[:colour]    } 
-    code << %{            print fn_str.rjust(10) + "\#{$.}" + " | "  if not opt[:colour]    } 
+    code << %{            first_column_of_match = matches[0].begin(0) + 1}
+    code << %{            print (fn_str.cyan + ("\#{$.}".yellow + ":" + "\#{first_column_of_match}".blue)) + " | ".yellow if opt[:colour]    } 
+    code << %{            print (fn_str + ("\#{$.}" + ":" + "\#{first_column_of_match}")) + " | " if not opt[:colour]    } 
     end
     code << %{          print_highlighted(line, matches)                                    } 
     end
@@ -651,9 +694,9 @@ END
     code << %{  f.close if f === File                                                       } 
     if opt[:print_num_matches]
     if opt[:invert_match]
-    code << %{      puts "\#{fn} :\#{inverse_count} "                                       } 
+    code << %{      puts "\#{fn}: \#{inverse_count} "                                       } 
     else
-    code << %{      puts "\#{fn} :\#{count} " if count > 0                                  } 
+    code << %{      puts "\#{fn}: \#{count} " if count > 0                                  } 
     end
     end
     if opt[:print_file_if_match]
@@ -663,7 +706,6 @@ END
     code << %{    puts fn if count == 0                                                     } 
     end
     code << %{end                                                                           } 
-
     module_eval code.join("\n"), "#{__FILE__} (#{__LINE__} )"
     end
   
