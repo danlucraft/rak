@@ -41,9 +41,6 @@ require "pathname"
 begin
   require 'colorize'
 rescue LoadError
-  puts 'Colorize gem not found. To display Rak results in color, please'
-  puts 'install it: gem install colorize'
-  puts ''
   ARGV << "--nocolour"
 end
 
@@ -825,6 +822,9 @@ File inclusion/exclusion:
 Miscellaneous:
   --help                This help
   --version             Display version & copyright
+
+[To display results in color, you require the colorize gem]
+
 END
 
 TYPES_HELP=<<END
@@ -840,3 +840,4 @@ Note that some extensions may appear in multiple types.  For example,
 END
 
 Rak.search
+
