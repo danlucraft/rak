@@ -658,7 +658,7 @@ END
     code << %{          unless displayed_filename                                           } 
     code << %{            print file_separator                                              } 
     code << %{            file_separator.replace("\\n")                                     } 
-    code << %{            puts fn.cyan if opt[:colour]                                      } 
+    code << %{            puts fn.green if opt[:colour]                                     } 
     code << %{            puts fn if not opt[:colour]                                       } 
     code << %{            displayed_filename = true                                         } 
     code << %{          end                                                                 } 
@@ -683,11 +683,11 @@ END
       
     if opt[:print_line_number]
     code << %{            first_column_of_match = matches[0].begin(0) + 1}
-    code << %{            print  "\#{$..to_s}".rjust(4).yellow + ":" + "\#{first_column_of_match}".ljust(4).blue + " | ".yellow if opt[:colour]    }
+    code << %{            print  "\#{$..to_s}".rjust(4).yellow + ":" + "\#{first_column_of_match}".ljust(4).cyan + " | ".yellow if opt[:colour]    }
     code << %{            print  "\#{$..to_s}".rjust(4) + ":" + "\#{first_column_of_match}".ljust(4) + " | " if not opt[:colour]    } 
     elsif opt[:print_file_each_line]
     code << %{            first_column_of_match = matches[0].begin(0) + 1}
-    code << %{            print (fn_str.cyan + ("\#{$.}".yellow + ":" + "\#{first_column_of_match}".blue)) + " | ".yellow if opt[:colour]    } 
+    code << %{            print (fn_str.green + ("\#{$.}".yellow + ":" + "\#{first_column_of_match}".cyan)) + " | ".yellow if opt[:colour]    } 
     code << %{            print (fn_str + ("\#{$.}" + ":" + "\#{first_column_of_match}")) + " | " if not opt[:colour]    } 
     end
     code << %{          print_highlighted(line, matches)                                    } 
