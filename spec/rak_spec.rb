@@ -24,7 +24,7 @@ describe "Rak", "with no options" do
   end
 
   it "prints all matches from files in subdirectories" do
-    rak("Pikon").should == <<-END
+    rak("Pikon --sort-files").should == <<-END
       *dir1/bar.rb*
          2|bar bar bar bar *Pikon* bar
          9|bar bar *Pikon* bar bar bar
@@ -165,7 +165,7 @@ describe "Rak", "options" do
   end
   
   it "-h suppresses filename and line number printing" do
-    rak("Pik -h").should == <<-END
+    rak("Pik -h --sort-files").should == <<-END
       bar bar bar bar *Pik*on bar
       bar bar *Pik*on bar bar bar
       foo foo foo foo foo *Pik*on foo foo
@@ -353,7 +353,7 @@ describe "Rak", "options" do
   end
   
   it "--follow means follow symlinks" do 
-    rak("Sagitarron --follow", :ansi => '').should == <<-END
+    rak("Sagitarron --follow --sort-files", :ansi => '').should == <<-END
       corge.rb
          1|corge corge corge Sagitarron corge
 
@@ -488,7 +488,7 @@ describe "Rak", "with combinations of options" do
   end
 
   it "-h and redirection" do
-    rak("Pik -h | cat", :test_mode => false).should == <<-END
+    rak("Pik -h --sort-files | cat", :test_mode => false).should == <<-END
       bar bar bar bar Pikon bar
       bar bar Pikon bar bar bar
       foo foo foo foo foo Pikon foo foo
@@ -506,7 +506,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support break" do
-    rak(%Q[--eval 'break if $. == 2']).should == <<-END
+    rak(%Q[--eval 'break if $. == 2' --sort-files]).should == <<-END
       *dir1/bar.rb*
          1|*
 
@@ -541,7 +541,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support next and contexts" do
-    rak(%Q[-C 2 --eval 'next unless $_ =~ /Pikon/']).should == <<-END
+    rak(%Q[-C 2 --eval 'next unless $_ =~ /Pikon/' --sort-files]).should == <<-END
       *dir1/bar.rb*
          1|
          2|bar bar bar bar *Pikon* bar
@@ -563,7 +563,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support break and contexts (and matches past break should get no highlighting)" do
-    rak(%Q[-C 2 --eval 'next unless $_[/Pikon/]...(break; nil)']).should == <<-END
+    rak(%Q[-C 2 --eval 'next unless $_[/Pikon/]...(break; nil)' --sort-files]).should == <<-END
       *dir1/bar.rb*
          1|
          2|bar bar bar bar *Pikon* bar
@@ -593,7 +593,7 @@ describe "Rak", "with --eval" do
   end
 
   it "should support multiple matches" do
-    rak(%Q[--eval 'next unless $_ =~ /Pikon/; $_.scan(/\\b\\w{3}\\b/){ matches << $~ }']).should == <<-END
+    rak(%Q[--eval 'next unless $_ =~ /Pikon/; $_.scan(/\\b\\w{3}\\b/){ matches << $~ }' --sort-files]).should == <<-END
       *dir1/bar.rb*
          2|*bar* *bar* *bar* *bar* Pikon *bar*
          9|*bar* *bar* Pikon *bar* *bar* *bar*
