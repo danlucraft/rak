@@ -12,7 +12,8 @@ Gem::Specification.new do |s|
   END
   s.email = %q{dan@fluentradical.com}
   s.executables = ["rak"]
-  s.files = ["History.txt", "Manifest.txt", "README.txt", "bin/rak", "lib/rak.rb", "spec/rak_spec.rb", "spec/help_spec.rb"]
+  s.files = ["History.txt", "Manifest.txt", "README.txt", "bin/rak", "lib/rak.rb"]
+  s.files += Dir["spec/**/*"].select { |f| not File.symlink?(f) }
   s.homepage = %q{http://rak.rubyforge.org}
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{rak}
