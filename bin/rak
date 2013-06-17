@@ -440,15 +440,23 @@ END
     return unless path.readable?
 
     if path.file?
-      relevant = file_relevant?(path)
-      relevant = !relevant if opt[:reverse_relevance]
-      yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
+      begin
+        relevant = file_relevant?(path)
+        relevant = !relevant if opt[:reverse_relevance]
+        yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
+      rescue
+        return
+      end
     elsif path.directory?
       path.children.each do |fn|
-        next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
-        next if fn.directory? and not opt[:descend]
-        next if fn.symlink? and not opt[:follow_symlinks]
-        find_all_files(fn, &blk)
+        begin
+          next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
+          next if fn.directory? and not opt[:descend]
+          next if fn.symlink? and not opt[:follow_symlinks]
+          find_all_files(fn, &blk)
+        rescue Exception => e
+          next
+        end
       end
     end
   end
