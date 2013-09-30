@@ -9,7 +9,7 @@ describe "Rak", "help and errors" do
     rak("--version").should == <<-END
       rak #{Rak::VERSION}
 
-      Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
+      Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved.
       Based on the perl tool 'ack' by Andy Lester.
 
       This program is free software; you can redistribute it and/or modify it

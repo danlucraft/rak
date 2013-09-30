@@ -37,7 +37,7 @@ def rak(args="", opts={})
     unless args.is_a?(String)
       args = args.map{|str| str.shell_escape}.join(" ")
     end
-    cmd = "#{ruby_bin} #{bin_rak} #{args}"
+    cmd = "#{ruby_bin} #{bin_rak} --sort-files #{args}"
     cmd = "#{opts[:pipe]} | #{cmd}" if opts[:pipe]
     ENV['RAK_TEST'] = "true" unless opts[:test_mode] == false
     if opts[:dir]
