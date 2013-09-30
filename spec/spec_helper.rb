@@ -5,6 +5,14 @@ require "pathname"
 HERE = Pathname(__FILE__).parent.expand_path
 require HERE.join("../lib/rak").to_s
 
+# Symlinks can't be shipped in the gem
+if not File.symlink?('spec/example/ln_dir')
+  File.symlink('_darcs/', 'spec/example/ln_dir')
+end
+if not File.symlink?('spec/example/corge.rb')
+  File.symlink('_darcs/corge.rb', 'spec/example/corge.rb')
+end
+
 class String
   def shell_escape
     return "''" if empty?
