@@ -18,4 +18,6 @@ Gem::Specification.new do |s|
   s.rubyforge_project = %q{rak}
   s.rubygems_version = %q{1.4.0}
   s.summary = %q{A grep replacement in Ruby, type "rak pattern".}
+
+  s.add_development_dependency "rspec"
 end
