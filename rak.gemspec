@@ -1,14 +1,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rak}
-  s.version = "1.4"
+  s.version = "1.5"
 
   s.authors = ["Daniel Lucraft"]
-  s.date = %q{2012-01-15}
+  s.date = %q{2012-07-30}
   s.default_executable = %q{rak}
   s.description = <<-END
     Grep replacement, recursively scans directories to match a given Ruby regular expression. Prints highlighted results.
-    Based on the Perl tool 'ack' by Andy Lester.  
+    Based on the Perl tool 'ack' by Andy Lester.
   END
   s.email = %q{dan@fluentradical.com}
   s.executables = ["rak"]
