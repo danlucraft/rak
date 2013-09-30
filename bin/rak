@@ -1,15 +1,47 @@
 #!/usr/bin/env ruby
 # encoding: binary
 
+# ------------------------------------------------------------------------------ 
+#  Rak Gem.
+#
+#  Rak is a grep replacement in pure Ruby. It accepts Ruby syntax regular 
+#  expressions and automatically recurses directories, skipping .svn/, .cvs/, 
+#  pkg/ and more things you don't care about. It is based on the Perl tool 
+#  ack by Andy Lester.
+#
+#  Rak was originally implemented by Daniel Lucraft, whose blog may be found
+#  at http://danlucraft.com/blog/. Full credits to the original version to
+#  him. His project may be found at https://github.com/danlucraft/rak.
+#
+#  This is my improvement of the original implementation of Rak, for
+#  stability, as well as UI improvements. I also added column handling so
+#  that editors interacting with Rak, or otherwise, may point directly to
+#  the line and word that was Rak'ed for. Column is only shown for the first
+#  matching word, if there are multiple, for a given line. 
+#
+#  Behaviour changes: 
+#    - ignore-case mode is default, as such a is (presumably)
+#      a more common case
+#    - search in all files is the default, as opposed to only 
+#      recognized files
+#
+#  -- Author
+#
+#  Eugene Ching (codejury)
+#  Email:   eugene@enegue.com
+#  Web:     www.codejury.com
+#  Twitter: @eugeneching
+#
+# ------------------------------------------------------------------------------ 
+
 require 'rubygems'
 require "pathname"
 
-if RUBY_PLATFORM =~ /mswin|mingw/
-  begin
-    require 'win32console'
-  rescue LoadError
-    ARGV << "--nocolour"
-  end
+# Require the colorize gem, if available
+begin
+  require 'colorize'
+rescue LoadError
+  ARGV << "--nocolour"
 end
 
 require 'getoptlong'
@@ -31,25 +63,23 @@ class String
 end
 
 class Rak
-  VERSION = "1.4"
-  
-  FILE_COLOUR = "\033[1;31m"
-  MATCH_COLOUR = "\033[1;37m\033[41m"
-  CLEAR_COLOURS = "\033[0m"
-  
+  VERSION = "1.5"
   VERSION_INFO=<<END
-rak #{VERSION}
+Rak #{VERSION}
+Copyright 2013 - #{Time.now.year} Eugene Ching, all rights reserved. 
+Based on the original Rak tool, credits below.
 
-Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
-Based on the perl tool 'ack' by Andy Lester.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Ruby.
+Original Credits:
+  Copyright 2008-#{Time.now.year} Daniel Lucraft, all rights reserved. 
+  Based on the perl tool 'ack' by Andy Lester. This program is free 
+  software; you can redistribute it and/or modify it under the same 
+  terms as Ruby.
 END
   
   FILE_TYPES = {
     :actionscript  => %w( .as .mxml ),
     :ada           => %w( .ada .adb .ads ),
+    :asp           => %w( .asp .aspx ),
     :asm           => %w( .S .asm .s ),
     :awk           => %w( .awk ),
     :batch         => %w( .bat .cmd ),
@@ -91,7 +121,7 @@ END
     :sql           => %w( .ctl .sql ),
     :tcl           => %w( .itcl .itk .tcl ),
     :tex           => %w( .cls .sty .tex ),
-    :text          => %w( .text .txt README ),
+    :text          => %w( .text .txt README .md .config .markdown .otl .votl ),
     :tt            => %w( .tt .tt2 .ttml ),
     :vala          => %w( .vala .vapi ),
     :vb            => %w( .bas .cls .ctl .frm .resx .vb ),
@@ -99,9 +129,10 @@ END
     :vim           => %w( .vim ),
     :xml           => %w( .dtd .ent .xml .xslt ),
     :yaml          => %w( .yaml .yml ),
+    :everything    => %w( . ),
   }
   
-  VC_DIRS = %w(blib CVS _darcs .git .hg .pc RCS SCCS .svn pkg)
+  VC_DIRS = %w(blib CVS _darcs .git .pc RCS SCCS .svn pkg)
   
   class << self
     attr_reader :opt
@@ -145,6 +176,7 @@ END
                             [ '-c', '--count', GetoptLong::NO_ARGUMENT ],
                             [ '-h', '--no-filename', GetoptLong::NO_ARGUMENT ],
                             [ '-i', '--ignore-case', GetoptLong::NO_ARGUMENT ],
+                            [ '-I', '--case-sensitive', GetoptLong::NO_ARGUMENT ],
                             [ '-v', '--invert-match', GetoptLong::NO_ARGUMENT ],
                             [ '-n', GetoptLong::NO_ARGUMENT ],
                             [ '-Q', '--literal', GetoptLong::NO_ARGUMENT ],
@@ -160,6 +192,7 @@ END
                             [ '--nocolour', GetoptLong::NO_ARGUMENT ],
                             [ '--color', GetoptLong::NO_ARGUMENT ],
                             [ '--nocolor', GetoptLong::NO_ARGUMENT ],
+                            [ '-j', '--noall', GetoptLong::NO_ARGUMENT ],
                             [ '-a', '--all', GetoptLong::NO_ARGUMENT ],
                             [ '--type', GetoptLong::REQUIRED_ARGUMENT ],
                             [ '--sort-files', GetoptLong::NO_ARGUMENT ],
@@ -183,7 +216,7 @@ END
     opt[:print_output] = nil
     opt[:print_highlighted] = true
     opt[:print_num_matches] = false
-    opt[:ignore_case] = false
+    opt[:ignore_case] = true
     opt[:invert_match] = false
     opt[:descend] = true
     opt[:literal] = false
@@ -197,7 +230,7 @@ END
     opt[:print_file_if_no_match] = false
     opt[:print_entire_line_if_no_match] = false
     opt[:colour] = true
-    opt[:all_files] = false
+    opt[:all_files] = true
     opt[:sort_files] = false
     opt[:follow_symlinks] = false
     opt[:after_context] = 0
@@ -258,6 +291,8 @@ END
           opt[:print_file_each_line] = false
         when '-i'
           opt[:ignore_case] = true
+        when '-I'
+          opt[:ignore_case] = false
         when '-v'
           opt[:invert_match] = true
         when '-n'
@@ -299,6 +334,8 @@ END
           opt[:colour] = true
         when '-a'
           opt[:all_files] = true
+        when '-j'
+          opt[:all_files] = false
         when '--type'
           if arg[0..1] == "no"
             type = arg[2..-1]
@@ -352,12 +389,6 @@ END
       exit
     end
 
-    unless opt[:colour]
-      FILE_COLOUR.replace ""
-      CLEAR_COLOURS.replace ""
-      MATCH_COLOUR.replace ""
-    end
-
     if opt[:only_print_filelist]
       each_file(ARGV) do |fn|
         puts fn
@@ -409,15 +440,23 @@ END
     return unless path.readable?
 
     if path.file?
-      relevant = file_relevant?(path)
-      relevant = !relevant if opt[:reverse_relevance]
-      yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
+      begin
+        relevant = file_relevant?(path)
+        relevant = !relevant if opt[:reverse_relevance]
+        yield(path.to_s.sub(/\A\.\/+/, "").gsub(/\/+/, "/")) if relevant
+      rescue
+        return
+      end
     elsif path.directory?
       path.children.each do |fn|
-        next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
-        next if fn.directory? and not opt[:descend]
-        next if fn.symlink? and not opt[:follow_symlinks]
-        find_all_files(fn, &blk)
+        begin
+          next if VC_DIRS.any?{|vc| vc == fn.basename.to_s}
+          next if fn.directory? and not opt[:descend]
+          next if fn.symlink? and not opt[:follow_symlinks]
+          find_all_files(fn, &blk)
+        rescue Exception => e
+          next
+        end
       end
     end
   end
@@ -510,177 +549,200 @@ END
     needs_inverse_count = (opt[:print_num_matches] and opt[:invert_match])
         
     code = []
-    code << %{def self.match_file(re, fn, file_separator)        }
-    code << %{  displayed_filename = false       }
-    code << %{  count = 0                        }
-                if needs_inverse_count
-    code << %{    inverse_count = 0             }
-                end
-    code << %{  print_num = 0                    }
-                if needs_no_more_matches
-    code << %{    no_more_matches = false          }
-                end
-                if opt[:print_file_each_line]
-    code << %{    fn_str = (fn.is_a?(String) ? FILE_COLOUR + fn + CLEAR_COLOURS + ":" : "")      }
-                end
-                if opt[:before_context] > 0
-    code << %{    before_context = []                           }
-                end
-    code << %{  if fn.is_a? String              }
-    code << %{    f = File.open(fn, "rb")       }
-    code << %{  elsif fn.is_a? IO               }
-    code << %{    f = fn                        }
-    code << %{  end                             }
+    code << %{def self.match_file(re, fn, file_separator)                                   } 
+    code << %{  displayed_filename = false                                                  } 
+    code << %{  count = 0                                                                   } 
+    if needs_inverse_count
+    code << %{    inverse_count = 0                                                         } 
+    end
+    code << %{  print_num = 0                                                               } 
+    if needs_no_more_matches
+    code << %{    no_more_matches = false                                                   } 
+    end
+    if opt[:print_file_each_line]
+    code << %{    fn_str = (fn.is_a?(String) ? fn + ":" : "")                               } 
+    end
+    if opt[:before_context] > 0
+    code << %{    before_context = []                                                       } 
+    end
+    code << %{  if fn.is_a? String                                                          } 
+    code << %{    f = File.open(fn, "rb")                                                   } 
+    code << %{  elsif fn.is_a? IO                                                           } 
+    code << %{    f = fn                                                                    } 
+    code << %{  end                                                                         } 
   
-    code << %{  f.each_line do |line|                                         }
-    code << %{    matches = []                          }
+    code << %{  f.each_line do |line|                                                       } 
+    code << %{    matches = []                                                              } 
                   
-    code << %{    unless no_more_matches }  if needs_no_more_matches
-                    if opt[:eval]
-    code << %{        $_ = line.chomp                            }
-    code << %{        $~ = nil                                            }
-    code << %{        no_more_matches = true                                          }
-    code << %{        eval_executed = false                                          }
-    code << %{        loop do                                        }
-    code << %{          if eval_executed                                                }
-    code << %{            no_more_matches = false                                           }
-    code << %{            break                                            }
-    code << %{          end                                             }
-    code << %{          eval_executed = true                                              }
-    code << %{          #{opt[:eval]}                                        }
-    code << %{          if matches.empty?                                            }
-    code << %{            $_ =~ /^.*$/ unless $~                       }
-    code << %{            matches << $~                            }
-    code << %{          end                                            }
-    code << %{          line = $_                                }
-    code << %{          no_more_matches = false                                           }
-    code << %{          break                                         }
-    code << %{        end                                           }
-                    else
-                      if opt[:print_output]
-    code << %{          line.scan(re){ matches << eval(opt[:print_output]) }                        }
-                      else
-    code << %{          line.scan(re){ matches << $~  }                                           }
-                      end
-                    end
-                    if opt[:print_match]
-    code << %{        matches.each{|md| puts md.to_s  }                                            }
-                    end
-    code << %{      count += matches.size                                                  }
-    code << %{    end  } if needs_no_more_matches
-                  if opt[:invert_match]
-                    if opt[:print_filename] 
-    code << %{        unless displayed_filename                                   }
-    code << %{          print file_separator                           }
-    code << %{          file_separator.replace("\\n")                             }
-    code << %{          puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
-    code << %{          displayed_filename = true                                   }
-    code << %{        end                                                               }
-                    end
-    code << %{      if matches.empty?                                                 }
-                      if needs_inverse_count
-    code << %{          inverse_count += 1                                          }
-                      end
-                      if opt[:print_highlighted]
-                        if opt[:print_line_number]
-    code << %{            print "\#{$..to_s.rjust(4)}|"                            }
-                        end
-    code << %{          puts line.expand_tabs                                    }
-                      end
-    code << %{      end                                                               }
-                  else
-    code << %{      if matches.empty?                                                 }
-                      if opt[:print_entire_line_if_no_match]
-    code << %{          puts line                                                 }
-                      end
-                      if opt[:use_context]
-                        if opt[:before_context] > 0 
-    code << %{            if print_num == 0                                                 }
-    code << %{              before_context << [$., line]                                   }
-    code << %{              if before_context.length >  #{opt[:before_context]}                  }
-    code << %{                before_context.shift                                        }
-    code << %{              end                                                               }
-    code << %{            end                                                               }
-                        end
-    code << %{          if print_num > 0                                                 }
-    code << %{            print_num -= 1                                                 }
-                          if opt[:print_highlighted]
-                            if opt[:print_line_number]
-    code << %{                print "\#{$..to_s.rjust(4)}|"                            }
-                            end
-    code << %{              puts line.expand_tabs                                }
-    code << %{            end                                                        }
-                        end
-                      end
-    code << %{      else                                                                      }
-    code << %{        print_num = opt[:after_context]                                          }
-                      if opt[:print_filename]
-    code << %{          unless displayed_filename                                          }
-    code << %{            print file_separator                           }
-    code << %{            file_separator.replace("\\n")                             }
-    code << %{            puts FILE_COLOUR + fn + CLEAR_COLOURS                            }
-    code << %{            displayed_filename = true                                          }
-    code << %{          end                                                               }
-                      end
-                      if opt[:before_context] > 0
-    code << %{          before_context.each do |before_i, before_line|                            }
-                          if opt[:print_line_number]
-    code << %{              print "\#{before_i.to_s.rjust(4)}|"                            }
-                          end
-    code << %{            puts before_line.expand_tabs                                     }
-    code << %{          end                                                               }
-    code << %{          before_context = []                                                 }
-                      end       
-                      if opt[:print_output]
-    code << %{          matches.each {|m| puts m}                                          }
-                      end
-                      if opt[:print_highlighted]
-                        if opt[:print_line_number]
-    code << %{            print  "\#{$..to_s.rjust(4)}|"                                   }
-                        elsif opt[:print_file_each_line]
-    code << %{            print fn_str + "\#{$.}:"                            }
-                        end
-    code << %{          print_highlighted(line, matches)                            }
-                      end
-    code << %{      end                                                                      }
-                    if opt[:max_count] 
-    code << %{        no_more_matches = true if count >= opt[:max_count]  }
-                    end
-                    if needs_no_more_matches and not needs_inverse_count
-    code << %{        break if no_more_matches and print_num == 0 }
-                    end
-                  end
-    code << %{  end                                                                      }
-    code << %{  f.close if f === File                                                        }
-                if opt[:print_num_matches]
-                  if opt[:invert_match]
-    code << %{      puts "\#{fn}:\#{inverse_count}"                                           }
-                  else       
-    code << %{      puts "\#{fn}:\#{count}" if count > 0                       }
-                  end
-                end
-                if opt[:print_file_if_match]
-    code << %{    puts fn if count > 0                                                               }
-                end
-                if opt[:print_file_if_no_match]
-    code << %{    puts fn if count == 0                                                               }
-                end 
-    code << %{end }
-    module_eval code.join("\n"), "#{__FILE__} (#{__LINE__})"
-  end
+    code << %{    unless no_more_matches                                                    } if needs_no_more_matches
+    if opt[:eval]
+    code << %{        $_ = line.chomp                                                       } 
+    code << %{        $~ = nil                                                              } 
+    code << %{        no_more_matches = true                                                } 
+    code << %{        eval_executed = false                                                 } 
+    code << %{        loop do                                                               } 
+    code << %{          if eval_executed                                                    } 
+    code << %{            no_more_matches = false                                           } 
+    code << %{            break                                                             } 
+    code << %{          end                                                                 } 
+    code << %{          eval_executed = true                                                } 
+    code << %{          #{opt[:eval]}                                                       } 
+    code << %{          if matches.empty?                                                   } 
+    code << %{            $_ =~ /^.*$/ unless $~                                            } 
+    code << %{            matches << $~                                                     } 
+    code << %{          end                                                                 } 
+    code << %{          line = $_                                                           } 
+    code << %{          no_more_matches = false                                             } 
+    code << %{          break                                                               } 
+    code << %{        end                                                                   } 
+    else
+    if opt[:print_output]
+    code << %{          line.scan(re){ matches << eval(opt[:print_output]) }                } 
+    else
+    code << %{          line.scan(re){ matches << $~ }                                      } 
+    end
+    end
+    if opt[:print_match]
+    code << %{        matches.each{|md| puts md.to_s}                                       } 
+    end
+    code << %{      count += matches.size                                                   } 
+    code << %{    end                                                                       } if needs_no_more_matches
+    if opt[:invert_match]
+    if opt[:print_filename]
+    code << %{        unless displayed_filename                                             } 
+    code << %{          print file_separator                                                } 
+    code << %{          file_separator.replace("\\n")                                       } 
+    code << %{          puts fn.cyan if opt[:colour]                                        } 
+    code << %{          puts fn if not opt[:colour]                                         } 
+    code << %{          displayed_filename = true                                           } 
+    code << %{        end                                                                   } 
+    end
+    code << %{      if matches.empty?                                                       } 
+    if needs_inverse_count
+    code << %{          inverse_count += 1                                                  } 
+    end
+    if opt[:print_highlighted]
+    if opt[:print_line_number]
+    code << %{            print "\#{$..to_s.rjust(4)} ".yellow + " | ".yellow if opt[:colour]    } 
+    code << %{            print "\#{$..to_s.rjust(4)} " + " | " if not opt[:colour]              } 
+    end
+    code << %{          puts line.expand_tabs                                               } 
+    end
+    code << %{      end                                                                     } 
+    else
+    code << %{      if matches.empty?                                                       } 
+    if opt[:print_entire_line_if_no_match]
+    code << %{          puts line                                                           } 
+    end
+    if opt[:use_context]
+
+    # Handle the before-context
+      
+    if opt[:before_context] > 0
+    code << %{            if print_num == 0                                                 } 
+    code << %{              before_context << [$., line]                                    } 
+    code << %{              if before_context.length >  #{opt[:before_context]}             } 
+    code << %{                before_context.shift                                          } 
+    code << %{              end                                                             } 
+    code << %{            end                                                               } 
+    end
+    code << %{          if print_num > 0                                                    } 
+    code << %{            print_num -= 1                                                    } 
+    if opt[:print_highlighted]
+    
+    # Handle the after-context  
+      
+    if opt[:print_line_number]                                                                
+    code << %{                print "\#{$..to_s.rjust(4)} ".yellow + "     " + "v ".yellow if opt[:colour] } 
+    code << %{                print "\#{$..to_s.rjust(4)} " + "     " + "v " if not opt[:colour]           } 
+    end
+    code << %{              puts line.expand_tabs                                           } 
+    code << %{            end                                                               } 
+    end
+    end
+    code << %{      else                                                                    } 
+    code << %{        print_num = opt[:after_context]                                       } 
+    if opt[:print_filename]
+    code << %{          unless displayed_filename                                           } 
+    code << %{            print file_separator                                              } 
+    code << %{            file_separator.replace("\\n")                                     } 
+    code << %{            puts fn.green if opt[:colour]                                     } 
+    code << %{            puts fn if not opt[:colour]                                       } 
+    code << %{            displayed_filename = true                                         } 
+    code << %{          end                                                                 } 
+    end
+    if opt[:before_context] > 0
+    code << %{          before_context.each do |before_i, before_line|                      } 
+    if opt[:print_line_number]
+    code << %{              print "\#{before_i.to_s.rjust(4)}".yellow + "     " + " ^ ".yellow if opt[:colour]  } 
+    code << %{              print "\#{before_i.to_s.rjust(4)}" + "     " + " ^ ".ljust(5) if not opt[:colour]            } 
+    end
+    code << %{            puts before_line.expand_tabs                                      } 
+    code << %{          end                                                                 } 
+    code << %{          before_context = []                                                 } 
+    end
+    if opt[:print_output]
+    code << %{          matches.each {|m| puts m}                                           } 
+    end
+    if opt[:print_highlighted]
+    
+    # Print all information on individual lines. This acts like a "raw mode"
+    # that is easily parsable.
+      
+    if opt[:print_line_number]
+    code << %{            first_column_of_match = matches[0].begin(0) + 1}
+    code << %{            print  "\#{$..to_s}".rjust(4).yellow + ":" + "\#{first_column_of_match}".ljust(4).cyan + " | ".yellow if opt[:colour]    }
+    code << %{            print  "\#{$..to_s}".rjust(4) + ":" + "\#{first_column_of_match}".ljust(4) + " | " if not opt[:colour]    } 
+    elsif opt[:print_file_each_line]
+    code << %{            first_column_of_match = matches[0].begin(0) + 1}
+    code << %{            print (fn_str.green + ("\#{$.}".yellow + ":" + "\#{first_column_of_match}".cyan)) + " | ".yellow if opt[:colour]    } 
+    code << %{            print (fn_str + ("\#{$.}" + ":" + "\#{first_column_of_match}")) + " | " if not opt[:colour]    } 
+    end
+    code << %{          print_highlighted(line, matches)                                    } 
+    end
+    code << %{      end                                                                     } 
+    if opt[:max_count]
+    code << %{        no_more_matches = true if count >= opt[:max_count]                    } 
+    end
+    if needs_no_more_matches and not needs_inverse_count
+    code << %{        break if no_more_matches and print_num == 0                           } 
+    end
+    end
+    code << %{  end                                                                         } 
+    code << %{  f.close if f === File                                                       } 
+    if opt[:print_num_matches]
+    if opt[:invert_match]
+    code << %{      puts "\#{fn}: \#{inverse_count} "                                       } 
+    else
+    code << %{      puts "\#{fn}: \#{count} " if count > 0                                  } 
+    end
+    end
+    if opt[:print_file_if_match]
+    code << %{    puts fn if count > 0                                                      } 
+    end
+    if opt[:print_file_if_no_match]
+    code << %{    puts fn if count == 0                                                     } 
+    end
+    code << %{end                                                                           } 
+    module_eval code.join("\n"), "#{__FILE__} (#{__LINE__} )"
+    end
   
   def self.print_highlighted(line, matches)
     matches = matches.map{|md| md.offset(0)}
     cuts = [0, matches, line.size].flatten
+    
     column = 0
-    0.upto(cuts.size-2) do |i|
-      part = line[cuts[i]...cuts[i+1]]
-      part = part.expand_tabs(column)
-      column += part.size
-      print MATCH_COLOUR if i%2 == 1
-      print part
-      print CLEAR_COLOURS if i%2 == 1
+    final_string = ''
+    matches.each do |str_start, str_end|
+      matched_string ||= line[str_start...str_end]
+      final_string << line[column...str_start]
+      final_string << matched_string.red if opt[:colour]
+      final_string << matched_string if not opt[:colour]
+      column = str_end
     end
+    final_string << line[column..line.size]
+
+    puts final_string
     print "\n" unless line[-1,1] == "\n"
   end
   
@@ -702,6 +764,7 @@ Example: rak -i select
 
 Searching:
   -i, --ignore-case     Ignore case distinctions
+  -I, --case-sensitive  Do not ignore case distinctions
   -v, --invert-match    Invert match: select non-matching lines
   -w, --word-regexp     Force PATTERN to match only whole words
   -x, --line-regexp     Force PATTERN to match only whole lines
@@ -754,8 +817,9 @@ File inclusion/exclusion:
   -n                    No descending into subdirectories
   -g REGEX              Only search in files matching REGEX.
   -k REGEX              Only search in files not matching REGEX.
+  -j, --noall           Only search in recognized files extensions
   -a, --all             All files, regardless of extension (but still skips
-                        blib, pkg, CVS, _darcs, .git, .hg, .pc, RCS, SCCS and .svn dirs)
+                        blib, pkg, CVS, _darcs, .git, .pc, RCS, SCCS and .svn dirs)
   --ruby                Include only Ruby files.
   --type=ruby           Include only Ruby files.
   --noruby              Exclude Ruby files.
@@ -766,6 +830,9 @@ File inclusion/exclusion:
 Miscellaneous:
   --help                This help
   --version             Display version & copyright
+
+[To display results in color, you require the colorize gem]
+
 END
 
 TYPES_HELP=<<END
@@ -781,3 +848,4 @@ Note that some extensions may appear in multiple types.  For example,
 END
 
 Rak.search
+
